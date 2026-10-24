@@ -56,6 +56,13 @@ namespace Clearance.Editor
             var player = UnityEngine.Object.FindFirstObjectByType<FirstPersonOfficer>();
             var score = UnityEngine.Object.FindFirstObjectByType<DecisionScore>();
             Check(mission && player && score, "Missing scene wiring");
+            var squad = UnityEngine.Object.FindFirstObjectByType<SquadCoordinator>();
+            if (squad)
+            {
+                squad.LeadEntry();
+                foreach (var teammate in squad.Officers) teammate.gameObject.SetActive(false);
+                squad.enabled = false;
+            }
             player.enabled = false;
             player.GetComponent<OfficerActions>().enabled = false;
             player.SetCursor(true);

@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 namespace Clearance
 {
@@ -8,22 +9,28 @@ namespace Clearance
         [SerializeField] float dwellSeconds = .7f;
         [SerializeField] float maximumDistance = 7;
         float dwell;
+        readonly Dictionary<Camera, float> observerDwell = new Dictionary<Camera, float>();
         public bool Checked { get; private set; }
         public string Label => label;
         public float Progress => Mathf.Clamp01(dwell / dwellSeconds);
         public void Configure(string value) => label = value;
-        public void Observe(Camera view, DecisionScore score, bool flashlightOn)
+        public void Observe(Camera view, DecisionScore score, bool flashlightOn, Transform observerRoot = null)
         {
             if (Checked) return;
             Vector3 delta = transform.position - view.transform.position;
             bool visible = delta.magnitude <= maximumDistance && Vector3.Angle(view.transform.forward, delta) < 15;
-            if (visible && Physics.Raycast(view.transform.position, delta.normalized, out var hit, delta.magnitude, ~0, QueryTriggerInteraction.Ignore))
-                visible = hit.distance >= delta.magnitude - .25f;
-            dwell = visible && flashlightOn ? dwell + Time.deltaTime : 0;
-            if (dwell < dwellSeconds) return;
+            if (visible)
+                foreach (var hit in Physics.RaycastAll(view.transform.position, delta.normalized, delta.magnitude, ~0, QueryTriggerInteraction.Ignore))
+                    if ((!observerRoot || !hit.transform.IsChildOf(observerRoot)) && hit.distance < delta.magnitude - .25f) { visible = false; break; }
+            observerDwell.TryGetValue(view, out float elapsed);
+            observerDwell[view] = visible && flashlightOn ? elapsed + Time.deltaTime : 0;
+            dwell = 0;
+            foreach (float value in observerDwell.Values) dwell = Mathf.Max(dwell, value);
+            if (observerDwell[view] < dwellSeconds) return;
             Checked = true;
             score.Record(name, score.Rules.cornerChecked, label + " checked with flashlight");
         }
+        public void StopObserving(Camera view) { observerDwell.Remove(view); }
         void OnDrawGizmos() { Gizmos.color = Color.cyan; Gizmos.DrawWireSphere(transform.position, .2f); }
     }
 }

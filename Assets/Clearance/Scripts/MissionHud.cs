@@ -9,6 +9,8 @@ namespace Clearance
         [SerializeField] DecisionScore score;
         [SerializeField] FirstPersonOfficer officer;
         [SerializeField] OfficerActions actions;
+        [SerializeField] SquadCoordinator squad;
+        public void ConfigureSquad(SquadCoordinator value) => squad = value;
         GUIStyle title, body, small;
         public void Configure(GroundFloorMission m, DecisionScore s, FirstPersonOfficer p, OfficerActions a)
         { mission = m; score = s; officer = p; actions = a; }
@@ -31,7 +33,7 @@ namespace Clearance
             GUI.Label(new Rect(38, 565, 1200, 28), score.Latest, body);
             GUI.Label(new Rect(38, 597, 1200, 50), actions.Message, body);
             GUI.Label(new Rect(38, 658, 1200, 27), "WASD Move  /  Mouse Look  /  Shift Slow  /  F Light  /  Q Command  /  E Interact / Secure  /  1-2 Tools  /  LMB Use  /  Esc Cursor", small);
-            if (!mission.Complete)
+            if (!mission.Complete && (!squad || squad.ChoiceMade))
             {
                 GUI.Label(new Rect(629, 340, 28, 35), "+", title);
                 GUI.Label(new Rect(390, 475, 570, 65), actions.Prompt, body);
@@ -53,9 +55,24 @@ namespace Clearance
                 GUI.Label(new Rect(385, 263, 510, 195), string.Join("\n", score.Timeline), small);
                 if (GUI.Button(new Rect(385, 475, 220, 40), "Retry ground floor")) SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
             }
-            else if (!officer.HasControl)
+            else if (!officer.HasControl && (!squad || squad.ChoiceMade))
             {
                 if (GUI.Button(new Rect(495, 310, 290, 65), "Resume / Capture mouse")) officer.SetCursor(true);
+            }
+            if (squad && !mission.Complete)
+            {
+                Panel(new Rect(22, 210, 420, 132));
+                GUI.Label(new Rect(38, 219, 390, 27), squad.Status, body);
+                GUI.Label(new Rect(38, 250, 390, 48), string.Join("\n", System.Array.ConvertAll(squad.Officers, o => "Assistant: " + o.Status)), small);
+                GUI.Label(new Rect(38, 307, 390, 27), "C: Team cover corners   /   B: Follow me", small);
+                if (!squad.ChoiceMade)
+                {
+                    Panel(new Rect(340, 200, 600, 290));
+                    GUI.Label(new Rect(365, 220, 550, 40), "CHOOSE YOUR ENTRY", title);
+                    GUI.Label(new Rect(365, 270, 550, 78), "Your assistant is ready. Lead the way, or send the assistant ahead to search both corners with the torch.", body);
+                    if (GUI.Button(new Rect(365, 365, 255, 60), "L / I lead - follow me")) squad.LeadEntry();
+                    if (GUI.Button(new Rect(650, 365, 265, 60), "C / Assistant first - search")) squad.SendToCorners();
+                }
             }
         }
         static void Panel(Rect rect)

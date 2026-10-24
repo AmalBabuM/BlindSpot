@@ -8,16 +8,18 @@ namespace Clearance
     {
         [SerializeField] Camera view;
         [SerializeField] GroundFloorMission mission;
+        [SerializeField] SquadCoordinator squad;
         [SerializeField] float moveSpeed = 2.6f;
         [SerializeField] float carefulSpeed = 1.2f;
         [SerializeField] float mouseSensitivity = .12f;
         CharacterController controller;
         float pitch, fallSpeed;
         public Camera View => view;
-        public bool HasControl => Cursor.lockState == CursorLockMode.Locked && !mission.Complete;
+        public bool HasControl => Cursor.lockState == CursorLockMode.Locked && !mission.Complete && (!squad || squad.ChoiceMade);
+        public void ConfigureSquad(SquadCoordinator value) => squad = value;
         public void Configure(Camera camera, GroundFloorMission value) { view = camera; mission = value; }
         void Awake() => controller = GetComponent<CharacterController>();
-        void Start() => SetCursor(true);
+        void Start() => SetCursor(!squad || squad.ChoiceMade);
         void OnDisable() => SetCursor(false);
         public void SetCursor(bool locked)
         {

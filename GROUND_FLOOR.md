@@ -36,7 +36,7 @@ Use **Clearance > Use Prisoner as Ground Floor Suspect** to apply the visual swa
 
 ## Current scope
 
-One playable room, one cooperative suspect, two observation checks, both tool outcomes, a scored completion and retry. Commands are text feedback, not microphone input or recorded dialogue. No squad AI, suspect attacks, navigation, civilians, upper floor or basement yet. The firearm and stun use camera raycasts with HUD feedback; polished weapon models, audio and impact effects remain future work. Corner markers are deliberate tutorial aids and approximate observation, not general spatial reasoning.
+One playable room, one cooperative suspect, two observation checks, both tool outcomes, a scored completion and retry. Commands are text feedback, not microphone input or recorded dialogue. One assistant provides distance-based following, corner searches and restraint support. No autonomous team combat, suspect attacks, civilians, upper floor or basement yet. The firearm and stun use camera raycasts with HUD feedback; polished weapon models, audio and impact effects remain future work. Corner markers are deliberate tutorial aids and approximate observation, not general spatial reasoning.
 
 ## Quick verification
 
@@ -49,3 +49,14 @@ SuspectPatrol controls the A/B route, obstacle checks, proximity and line-of-sig
 
 ## Mixamo animation setup
 PrisonerAnimations.controller has Idle, Walking, Kneel and Fall states, driven by Speed, Surrender and Fallen parameters. Idle/walk loop; kneel/fall play once and hold their last frame. All clips use the prisoner humanoid avatar. Root motion is disabled and movement is baked into the clips so SuspectPatrol remains the movement authority. The first Q raises the hands over the breathing idle pose. This encounter is unarmed: the synthetic weapon prop is hidden. A close flashlight inspection must complete before the second Q starts kneeling. Restraint unlocks after the kneel clip finishes. The original 10.8-second clip stood back up; its playback is trimmed to hold the last stable kneeling pose (about 6.5 seconds). A bullet hit plays Falling Back Death without tipping the actor root. The same fall is temporarily reused for stun incapacitation because no separate stun clip was supplied. The hit capsule follows the lower kneeling pose and is disabled for fallen actors. Use Clearance > Install Mixamo Prisoner Animations to reapply import/controller wiring.
+
+## Assisting officer
+
+One instance of the supplied police_officer prefab assists the player. At the start choose L / I lead, or C / Assistant first. In follow mode the assistant holds position while you turn or move slightly, catches up beyond 3.2 metres, and settles nearby. C sends the assistant to check both TeamCover_Left/Right positions in sequence with the torch. B returns to distance-based follow. Corner scores are awarded once across player and assistant observations.
+
+The officer uses Standing Torch Walk Forward for movement and Standing Torch Inspect Forward while searching/holding. The old procedural careful-walk arm override is disabled. Root motion stays off; movement remains controlled by navigation. A torch prop and its spotlight are attached to the right hand.
+
+After the first Q hands-up command, the assistant approaches the suspect's side. The player's flashlight inspection and second Q kneel order remain required. Once the suspect finishes kneeling, the assistant moves behind him, reaches toward his wrists for 2.5 seconds, and restrains him automatically. Player E restraint still works and cannot duplicate the reward. No dedicated handcuff clip was supplied: the wrist-reaching action is a procedural approximation layered over the search clip. The assistant remains beside the restrained suspect as a guard.
+
+SquadCoordinator owns orders/navigation; AssistingOfficer owns follow/search/assist behavior. Navigation is baked from _Level colliders; interactive doors are opened en route. Use Clearance > Use One Assistant With Torch Animations to apply the setup, and Clearance > Test Assisting Officers to verify it. Rebuild navigation after material layout changes. The assistant does not fire autonomously.
+Follow tuning: AssistingOfficer exposes followStartDistance (3.2 m), followStopDistance (1.9 m), followSpeed (2.3 m/s), and carefulSpeed (0.85 m/s). Cover orders use slower acceleration/turning, the supplied torch-walk/search clips, with procedural wrist reaching only during restraint. Squad Play Mode checks cover rotation and small-movement holding, following after greater separation, returning to idle, cautious speed, corner coverage and regrouping.
