@@ -1,0 +1,68 @@
+using UnityEngine;
+using UnityEngine.SceneManagement;
+
+namespace Clearance
+{
+    public sealed class MissionHud : MonoBehaviour
+    {
+        [SerializeField] GroundFloorMission mission;
+        [SerializeField] DecisionScore score;
+        [SerializeField] FirstPersonOfficer officer;
+        [SerializeField] OfficerActions actions;
+        GUIStyle title, body, small;
+        public void Configure(GroundFloorMission m, DecisionScore s, FirstPersonOfficer p, OfficerActions a)
+        { mission = m; score = s; officer = p; actions = a; }
+        void OnGUI()
+        {
+            if (title == null)
+            {
+                title = new GUIStyle(GUI.skin.label) { fontSize = 23, fontStyle = FontStyle.Bold };
+                body = new GUIStyle(GUI.skin.label) { fontSize = 17, wordWrap = true };
+                small = new GUIStyle(body) { fontSize = 14 };
+            }
+            GUI.matrix = Matrix4x4.Scale(new Vector3(Screen.width / 1280f, Screen.height / 720f, 1));
+            Panel(new Rect(22, 22, 420, 173));
+            GUI.Label(new Rect(38, 32, 390, 40), "CLEARANCE / GROUND FLOOR", title);
+            GUI.Label(new Rect(38, 79, 390, 100), $"Corners observed: {mission.CornersChecked}/2\nSuspect: {mission.Suspect.State}\nCheck corners > command > resolve > E to secure", body);
+            Panel(new Rect(1010, 22, 248, 98));
+            GUI.Label(new Rect(1028, 34, 215, 40), $"SCORE  {score.Total}", title);
+            GUI.Label(new Rect(1028, 77, 215, 30), actions.Lethal ? "2 / FIREARM - LAST RESORT" : "1 / STUN DEVICE", small);
+            Panel(new Rect(22, 553, 1236, 145));
+            GUI.Label(new Rect(38, 565, 1200, 28), score.Latest, body);
+            GUI.Label(new Rect(38, 597, 1200, 50), actions.Message, body);
+            GUI.Label(new Rect(38, 658, 1200, 27), "WASD Move  /  Mouse Look  /  Shift Slow  /  F Light  /  Q Command  /  E Interact / Secure  /  1-2 Tools  /  LMB Use  /  Esc Cursor", small);
+            if (!mission.Complete)
+            {
+                GUI.Label(new Rect(629, 340, 28, 35), "+", title);
+                GUI.Label(new Rect(390, 475, 570, 65), actions.Prompt, body);
+                foreach (var c in mission.Corners)
+                {
+                    var p = officer.View.WorldToViewportPoint(c.transform.position);
+                    if (p.z <= 0 || p.x < 0 || p.x > 1 || p.y < 0 || p.y > 1) continue;
+                    GUI.color = c.Checked ? Color.green : Color.cyan;
+                    GUI.Label(new Rect(p.x * 1280 - 75, (1 - p.y) * 720 - 25, 210, 40),
+                        c.Checked ? c.Label + " [checked]" : c.Label + $" {c.Progress:P0}", small);
+                    GUI.color = Color.white;
+                }
+            }
+            if (mission.Complete)
+            {
+                Panel(new Rect(360, 155, 560, 380));
+                GUI.Label(new Rect(385, 175, 520, 45), "GROUND FLOOR SECURED", title);
+                GUI.Label(new Rect(385, 223, 510, 35), $"Final score: {score.Total}", body);
+                GUI.Label(new Rect(385, 263, 510, 195), string.Join("\n", score.Timeline), small);
+                if (GUI.Button(new Rect(385, 475, 220, 40), "Retry ground floor")) SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+            }
+            else if (!officer.HasControl)
+            {
+                if (GUI.Button(new Rect(495, 310, 290, 65), "Resume / Capture mouse")) officer.SetCursor(true);
+            }
+        }
+        static void Panel(Rect rect)
+        {
+            GUI.color = new Color(.035f, .055f, .075f, .93f);
+            GUI.DrawTexture(rect, Texture2D.whiteTexture);
+            GUI.color = Color.white;
+        }
+    }
+}
