@@ -18,6 +18,8 @@ namespace Clearance
         NavMeshDataInstance navigationInstance;
         public SquadOrder Order { get; private set; }
         public bool ChoiceMade => Order != SquadOrder.AwaitingChoice;
+        public void ConfigureNavigation(NavMeshData value) => navigation = value;
+        public void ResumeFollowAfterEscort() => Order = SquadOrder.Follow;
         public AssistingOfficer[] Officers => officers;
         public void UseSingleAssistant(AssistingOfficer assistant) => officers = new[] { assistant };
         public Transform[] CoverPositions => coverPositions;

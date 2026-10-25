@@ -7,6 +7,8 @@ namespace Clearance
     {
         [SerializeField] SuspectController suspect;
         [SerializeField] Animator animator;
+        [SerializeField] OfficeEncounter office;
+        public void ConfigureOffice(OfficeEncounter value) => office = value;
         SuspectPatrol patrol;
         CapsuleCollider hitCapsule;
         float handsWeight;
@@ -28,9 +30,11 @@ namespace Clearance
         void Update()
         {
             if (!suspect || !UsesAnimator) return;
-            bool surrender = suspect.State == SuspectState.Considering || suspect.State == SuspectState.Surrendered || suspect.State == SuspectState.Restrained;
+            bool escorted = office && office.Escort.Started;
+            bool surrender = !escorted && ((office && !office.SuspectRevealed) || suspect.State == SuspectState.Considering || suspect.State == SuspectState.Surrendered || suspect.State == SuspectState.Restrained);
             bool fallen = suspect.State == SuspectState.Down || suspect.State == SuspectState.Stunned;
-            animator.SetFloat(Speed, suspect.State == SuspectState.Patrolling && patrol ? patrol.WalkingSpeed : 0);
+            animator.SetFloat(Speed, escorted ? office.Escort.SuspectSpeed : suspect.State == SuspectState.Patrolling && patrol ? patrol.WalkingSpeed : 0);
+            if (office) animator.SetBool("Escorted", escorted);
             animator.SetBool(Surrender, surrender);
             animator.SetBool(Fallen, fallen);
             if (fallen && hitCapsule) hitCapsule.enabled = false;
@@ -47,7 +51,7 @@ namespace Clearance
                 RaiseArm(HumanBodyBones.LeftLowerArm, HumanBodyBones.LeftHand, Vector3.up);
                 RaiseArm(HumanBodyBones.RightLowerArm, HumanBodyBones.RightHand, Vector3.up);
             }
-            bool kneeling = suspect.State == SuspectState.Considering || suspect.State == SuspectState.Surrendered || suspect.State == SuspectState.Restrained;
+            bool kneeling = !(office && office.Escort.Started) && ((office && !office.SuspectRevealed) || suspect.State == SuspectState.Considering || suspect.State == SuspectState.Surrendered || suspect.State == SuspectState.Restrained);
             if (!kneeling) { hitCapsule.height = 1.8f; hitCapsule.center = Vector3.up * .9f; return; }
             var head = animator.GetBoneTransform(HumanBodyBones.Head);
             if (!head) return;

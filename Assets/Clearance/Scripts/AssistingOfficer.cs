@@ -19,6 +19,9 @@ namespace Clearance
         [SerializeField] float carefulSpeed = .85f;
         [SerializeField] bool useTorchAnimations;
         [SerializeField] float cuffSeconds = 2.5f;
+        [SerializeField] OfficeEncounter office;
+        public void ConfigureOffice(OfficeEncounter value) => office = value;
+        public void ResumeAfterEscort() { following = false; applyingCuffs = false; squad.ResumeFollowAfterEscort(); }
         NavMeshAgent agent;
         float nextDestinationUpdate;
         Vector3 leaderMotionSample, travelDirection;
@@ -54,12 +57,14 @@ namespace Clearance
         {
             if (!agent.enabled || !agent.isOnNavMesh) return;
             if (animator) animator.SetFloat("Speed", agent.velocity.magnitude);
+            if (office && office.Escort.IsActive)
+            { applyingCuffs = false; Status = office.Escort.Status; return; }
             if (!squad.ChoiceMade || squad.Mission.Complete)
             { agent.isStopped = true; Status = squad.Mission.Complete ? "Room secured" : "Awaiting your order"; return; }
             var suspectState = squad.Mission.Suspect.State;
             bool supporting = suspectState == SuspectState.HandsUp || suspectState == SuspectState.VerifiedUnarmed ||
                 suspectState == SuspectState.Considering || suspectState == SuspectState.Surrendered || suspectState == SuspectState.Restrained;
-            if (supporting) { SupportSurrender(); return; }
+            if (supporting && !(office && office.Escort.Returned)) { SupportSurrender(); return; }
             applyingCuffs = false;
             bool covering = squad.Order == SquadOrder.CoverCorners;
             Vector3 movement = squad.Leader.transform.position - leaderMotionSample;
@@ -231,6 +236,13 @@ namespace Clearance
             foreach (var collider in Physics.OverlapSphere(transform.position + Vector3.up, 1.7f, ~0, QueryTriggerInteraction.Ignore))
             {
                 var door = collider.GetComponentInParent<InteractableDoor>();
+                var pushDoor = collider.GetComponentInParent<PushDoor>();
+                if (pushDoor)
+                {
+                    pushDoor.Push(collider.bounds.center, agent.desiredVelocity);
+                    if (!pushDoor.IsPassable) agent.isStopped = true;
+                    continue;
+                }
                 if (!door) continue;
                 Vector3 toDoor = collider.bounds.center - transform.position; toDoor.y = 0;
                 if (Vector3.Dot(agent.desiredVelocity.normalized, toDoor.normalized) < .25f) continue;

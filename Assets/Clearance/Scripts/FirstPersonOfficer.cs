@@ -24,6 +24,11 @@ namespace Clearance
         void Awake() => controller = GetComponent<CharacterController>();
         void Start() => SetCursor(!squad || squad.ChoiceMade);
         void OnDisable() => SetCursor(false);
+        void OnControllerColliderHit(ControllerColliderHit hit)
+        {
+            var door = hit.collider.GetComponentInParent<PushDoor>();
+            if (door) door.Push(hit.point, hit.moveDirection);
+        }
         public void SetCursor(bool locked)
         {
             Cursor.lockState = locked ? CursorLockMode.Locked : CursorLockMode.None;

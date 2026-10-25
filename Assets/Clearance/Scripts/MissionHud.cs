@@ -24,8 +24,8 @@ namespace Clearance
             }
             GUI.matrix = Matrix4x4.Scale(new Vector3(Screen.width / 1280f, Screen.height / 720f, 1));
             Panel(new Rect(22, 22, 420, 173));
-            GUI.Label(new Rect(38, 32, 390, 40), "CLEARANCE / GROUND FLOOR", title);
-            GUI.Label(new Rect(38, 79, 390, 100), $"Corners observed: {mission.CornersChecked}/2\nSuspect: {mission.Suspect.State}\nCheck corners > command > resolve > E to secure", body);
+            GUI.Label(new Rect(38, 32, 390, 40), mission.Office ? "CLEARANCE / OFFICE ENTRY" : "CLEARANCE / GROUND FLOOR", title);
+            GUI.Label(new Rect(38, 79, 390, 110), mission.Office ? mission.Office.Objective : $"Corners observed: {mission.CornersChecked}/2\nSuspect: {mission.Suspect.State}\nCheck corners > command > resolve > E to secure", body);
             Panel(new Rect(1010, 22, 248, 98));
             GUI.Label(new Rect(1028, 34, 215, 40), $"SCORE  {score.Total}", title);
             GUI.Label(new Rect(1028, 77, 215, 30), actions.Lethal ? "2 / FIREARM - LAST RESORT" : "1 / STUN DEVICE", small);
