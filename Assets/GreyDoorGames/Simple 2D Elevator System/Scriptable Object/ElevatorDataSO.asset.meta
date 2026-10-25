@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: c01010429b3440a4faace0d20aeb24aa
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 11400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 388176
+  packageName: Simple 2D Elevator System
+  packageVersion: 1.0.0
+  assetPath: Assets/GreyDoorGames/Simple 2D Elevator System/Scriptable Object/ElevatorDataSO.asset
+  uploadId: 994174

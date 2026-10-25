@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: e695216159d029a49b255096ec4a33da
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 7400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 388176
+  packageName: Simple 2D Elevator System
+  packageVersion: 1.0.0
+  assetPath: Assets/GreyDoorGames/Simple 2D Elevator System/Art/Animation/Door Close Animation.anim
+  uploadId: 994174

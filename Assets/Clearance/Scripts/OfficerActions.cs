@@ -33,6 +33,7 @@ namespace Clearance
             bool hitSomething = Physics.Raycast(view.position, view.forward, out var hit, 30, ~0, QueryTriggerInteraction.Ignore);
             var suspect = hitSomething ? hit.collider.GetComponentInParent<SuspectController>() : null;
             var door = hitSomething ? hit.collider.GetComponentInParent<InteractableDoor>() : null;
+            var elevator = hitSomething ? hit.collider.GetComponentInParent<UnsafeElevator>() : null;
             Prompt = suspect ? suspect.Status : door && hit.distance < 3 ? "E: Toggle door" : "";
             var encounterSuspect = mission.Suspect;
             if (suspect == encounterSuspect && hit.distance <= 3.5f)
@@ -41,6 +42,7 @@ namespace Clearance
             if (!suspect && encounterSuspect.State == SuspectState.Alerted &&
                 Vector3.Distance(transform.position, encounterSuspect.transform.position) <= commandRange)
                 Prompt = "He is watching you | Aim at him and press Q: Raise your hands!";
+            if (elevator && hit.distance < 3) Prompt = elevator.IsOpen ? "E: Lift unsafe - use stairs" : "E: Use elevator / Choose floor";
             if (keys.qKey.wasPressedThisFrame)
             {
                 bool kneelCommand = suspect && suspect.State == SuspectState.VerifiedUnarmed;
@@ -51,7 +53,13 @@ namespace Clearance
             }
             if (keys.eKey.wasPressedThisFrame)
             {
-                if (suspect && hit.distance <= restraintRange && suspect.State == SuspectState.Surrendered) suspect.Restrain();
+                if (elevator && hit.distance < 3)
+                {
+                    elevator.ShowFloorChoice(officer);
+                    Message = "Elevator selected. Choose a floor or stay here.";
+                    return;
+                }
+                else if (suspect && hit.distance <= restraintRange && suspect.State == SuspectState.Surrendered) suspect.Restrain();
                 else if (door && hit.distance < 3) door.Toggle();
                 else Message = mission.TrySecure();
             }

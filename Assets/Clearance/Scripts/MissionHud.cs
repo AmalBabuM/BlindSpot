@@ -55,7 +55,7 @@ namespace Clearance
                 GUI.Label(new Rect(385, 263, 510, 195), string.Join("\n", score.Timeline), small);
                 if (GUI.Button(new Rect(385, 475, 220, 40), "Retry ground floor")) SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
             }
-            else if (!officer.HasControl && (!squad || squad.ChoiceMade))
+            else if (!officer.HasControl && !officer.InteractionBlocked && (!squad || squad.ChoiceMade))
             {
                 if (GUI.Button(new Rect(495, 310, 290, 65), "Resume / Capture mouse")) officer.SetCursor(true);
             }

@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 497fd695a6d4a2c448efa2c4775d635d
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 388176
+  packageName: Simple 2D Elevator System
+  packageVersion: 1.0.0
+  assetPath: Assets/GreyDoorGames/Simple 2D Elevator System/Prefabs/Elevator/Elevator Main Canvas.prefab
+  uploadId: 994174

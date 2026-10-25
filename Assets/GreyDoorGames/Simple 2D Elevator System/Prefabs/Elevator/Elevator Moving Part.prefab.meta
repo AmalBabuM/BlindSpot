@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: c54f01e733829e740a6b3997f29d8d6f
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 388176
+  packageName: Simple 2D Elevator System
+  packageVersion: 1.0.0
+  assetPath: Assets/GreyDoorGames/Simple 2D Elevator System/Prefabs/Elevator/Elevator Moving Part.prefab
+  uploadId: 994174

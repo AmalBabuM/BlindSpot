@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: cf7c78404292df544af1fd2cf6ce452b
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 9100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 388176
+  packageName: Simple 2D Elevator System
+  packageVersion: 1.0.0
+  assetPath: Assets/GreyDoorGames/Simple 2D Elevator System/Art/Animation/Elevator Door.controller
+  uploadId: 994174
