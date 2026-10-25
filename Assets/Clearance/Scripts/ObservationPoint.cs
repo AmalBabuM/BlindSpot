@@ -10,6 +10,7 @@ namespace Clearance
         [SerializeField] float maximumDistance = 7;
         float dwell;
         readonly Dictionary<Camera, float> observerDwell = new Dictionary<Camera, float>();
+        readonly RaycastHit[] visibilityHits = new RaycastHit[32];
         public bool Checked { get; private set; }
         public string Label => label;
         public float Progress => Mathf.Clamp01(dwell / dwellSeconds);
@@ -20,8 +21,16 @@ namespace Clearance
             Vector3 delta = transform.position - view.transform.position;
             bool visible = delta.magnitude <= maximumDistance && Vector3.Angle(view.transform.forward, delta) < 15;
             if (visible)
-                foreach (var hit in Physics.RaycastAll(view.transform.position, delta.normalized, delta.magnitude, ~0, QueryTriggerInteraction.Ignore))
-                    if ((!observerRoot || !hit.transform.IsChildOf(observerRoot)) && hit.distance < delta.magnitude - .25f) { visible = false; break; }
+            {
+                int count = Physics.RaycastNonAlloc(view.transform.position, delta.normalized, visibilityHits, delta.magnitude, ~0, QueryTriggerInteraction.Ignore);
+                // A full buffer may omit an occluder; require another clear observation.
+                if (count == visibilityHits.Length) visible = false;
+                for (int i = 0; visible && i < count; i++)
+                {
+                    var hit = visibilityHits[i];
+                    if ((!observerRoot || !hit.transform.IsChildOf(observerRoot)) && hit.distance < delta.magnitude - .25f) visible = false;
+                }
+            }
             observerDwell.TryGetValue(view, out float elapsed);
             observerDwell[view] = visible && flashlightOn ? elapsed + Time.deltaTime : 0;
             dwell = 0;

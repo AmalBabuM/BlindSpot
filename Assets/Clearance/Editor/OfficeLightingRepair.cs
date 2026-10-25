@@ -123,9 +123,10 @@ namespace Clearance.Editor
             SetInt(serialized, "m_AdditionalLightsRenderingMode", 1);
             SetInt(serialized, "m_AdditionalLightsPerObjectLimit", 8);
             SetBool(serialized, "m_MainLightShadowsSupported", true);
-            SetBool(serialized, "m_AdditionalLightShadowsSupported", true);
-            SetBool(serialized, "m_SoftShadowsSupported", true);
-            SetBool(serialized, "m_SupportsHDR", true);
+            SetBool(serialized, "m_AdditionalLightShadowsSupported", false);
+            SetBool(serialized, "m_SoftShadowsSupported", false);
+            SetBool(serialized, "m_SupportsHDR", false);
+            serialized.FindProperty("m_RenderScale").floatValue = .85f;
             SetInt(serialized, "m_AdditionalLightsShadowmapResolution", 2048);
             var renderers = serialized.FindProperty("m_RendererDataList");
             var renderer = AssetDatabase.LoadAssetAtPath<UniversalRendererData>(Folder + "/OfficeRenderer.asset");
@@ -135,7 +136,7 @@ namespace Clearance.Editor
                 renderer.name = "OfficeRenderer"; AssetDatabase.CreateAsset(renderer, Folder + "/OfficeRenderer.asset");
             }
             var rendererSettings = new SerializedObject(renderer);
-            SetInt(rendererSettings, "m_RenderingMode", 2); // Forward+ avoids per-object light selection on large room meshes.
+            SetInt(rendererSettings, "m_RenderingMode", 0); // Forward keeps the browser rendering budget predictable.
             rendererSettings.ApplyModifiedPropertiesWithoutUndo();
             renderers.GetArrayElementAtIndex(0).objectReferenceValue = renderer;
             serialized.ApplyModifiedPropertiesWithoutUndo();

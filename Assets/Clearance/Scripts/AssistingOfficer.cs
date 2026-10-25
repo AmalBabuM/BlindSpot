@@ -31,6 +31,8 @@ namespace Clearance
         int coverIndex;
         float cuffTime;
         bool applyingCuffs;
+        readonly Collider[] nearbyDoors = new Collider[32];
+        float nextDoorScan;
         public string Status { get; private set; } = "Ready";
         public bool AtCover { get; private set; }
         public NavMeshAgent Agent => agent;
@@ -233,8 +235,12 @@ namespace Clearance
         }
         void OpenDoorsAhead()
         {
-            foreach (var collider in Physics.OverlapSphere(transform.position + Vector3.up, 1.7f, ~0, QueryTriggerInteraction.Ignore))
+            if (Time.time < nextDoorScan) return;
+            nextDoorScan = Time.time + .15f;
+            int count = Physics.OverlapSphereNonAlloc(transform.position + Vector3.up, 1.7f, nearbyDoors, ~0, QueryTriggerInteraction.Ignore);
+            for (int i = 0; i < count; i++)
             {
+                var collider = nearbyDoors[i];
                 var door = collider.GetComponentInParent<InteractableDoor>();
                 var pushDoor = collider.GetComponentInParent<PushDoor>();
                 if (pushDoor)

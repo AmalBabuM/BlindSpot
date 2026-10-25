@@ -21,6 +21,7 @@ namespace Clearance
         }
         void FixedUpdate()
         {
+            if (Mathf.Abs(velocity) < .0001f) return;
             angle = Mathf.Clamp(angle + velocity * Time.fixedDeltaTime, -maximumAngle, maximumAngle);
             velocity = Mathf.MoveTowards(velocity, 0, damping * Time.fixedDeltaTime);
             if (Mathf.Abs(angle) >= maximumAngle) velocity = 0;

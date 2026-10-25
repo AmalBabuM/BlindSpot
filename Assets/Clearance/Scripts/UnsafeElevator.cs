@@ -15,6 +15,7 @@ namespace Clearance
         FirstPersonOfficer player;
         Vector3 leftClosed, rightClosed;
         bool choosing, warningDialog;
+        GUIStyle titleStyle, bodyStyle;
         public bool IsOpen { get; private set; }
         public int OpenCount { get; private set; }
         public bool IsDialogOpen => choosing || warningDialog;
@@ -67,10 +68,13 @@ namespace Clearance
             GUI.color = new Color(.025f, .04f, .055f, .98f);
             GUI.DrawTexture(new Rect(335, 210, 610, 280), Texture2D.whiteTexture);
             GUI.color = Color.white;
-            var title = new GUIStyle(GUI.skin.label) { fontSize = 25, fontStyle = FontStyle.Bold };
-            var body = new GUIStyle(GUI.skin.label) { fontSize = 19, wordWrap = true };
-            GUI.Label(new Rect(360, 232, 560, 45), warningDialog ? "LIFT UNSAFE" : "USE ELEVATOR", title);
-            GUI.Label(new Rect(360, 291, 555, 90), warningDialog ? warning : "Choose how to continue to the next floor.", body);
+            if (titleStyle == null)
+            {
+                titleStyle = new GUIStyle(GUI.skin.label) { fontSize = 25, fontStyle = FontStyle.Bold };
+                bodyStyle = new GUIStyle(GUI.skin.label) { fontSize = 19, wordWrap = true };
+            }
+            GUI.Label(new Rect(360, 232, 560, 45), warningDialog ? "LIFT UNSAFE" : "USE ELEVATOR", titleStyle);
+            GUI.Label(new Rect(360, 291, 555, 90), warningDialog ? warning : "Choose how to continue to the next floor.", bodyStyle);
             if (warningDialog)
             {
                 if (GUI.Button(new Rect(360, 407, 555, 48), "Understood - use the stairs")) Dismiss();

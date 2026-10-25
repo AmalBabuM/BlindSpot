@@ -4,7 +4,7 @@ Use **Clearance > Repair And Bake Office Lighting** (or **Bake Office Lighting**
 
 ## What was corrected
 
-- The Very Low quality preset used vertex lighting and disabled main-light rendering. A dedicated OfficeLightingPipeline/OfficeRenderer uses per-pixel Forward+ lighting, consistently across the existing quality levels. Original pipeline assets remain unchanged.
+- The Very Low quality preset used vertex lighting and disabled main-light rendering. A dedicated OfficeLightingPipeline/OfficeRenderer uses per-pixel Forward lighting consistently across the existing quality levels. The WebGL budget disables HDR, soft shadows and additional-light realtime shadows, with an 85% render scale. Baked shadows, lightmaps, probes and mixed-light illumination remain available. Original imported pipeline assets remain unchanged.
 - The GroundFloor scene referenced the imported Test_Map lighting data. Its new bake is stored in Assets/Scenes/GroundFloor/LightingData.asset with the scene's own lightmaps and reflection cubemaps. The imported Test_Map data is retained.
 - Architecture, desk and static lift cabin/frame receive baked lightmaps. Moving door panels, push doors, animated fans and characters use baked light probes rather than stale static maps.
 - Fixed modular-kit fixture lights are Baked. Office/door/lift fill lights are Mixed, and flashlights remain realtime. The desk front receives a soft fill without recoloring its wood material.
