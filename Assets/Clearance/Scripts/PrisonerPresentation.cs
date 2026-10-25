@@ -17,6 +17,15 @@ namespace Clearance
         static readonly int Fallen = Animator.StringToHash("Fallen");
         public Animator Animator => animator;
         public bool UsesAnimator => animator && animator.runtimeAnimatorController;
+        public bool FallAnimationFinished
+        {
+            get
+            {
+                if (!UsesAnimator || !animator.isActiveAndEnabled) return true;
+                var state = animator.GetCurrentAnimatorStateInfo(0);
+                return state.IsName("Fall") && state.normalizedTime >= 1 && !animator.IsInTransition(0);
+            }
+        }
         public void Configure(SuspectController value, Transform la, Transform lf, Transform lh,
             Transform ra, Transform rf, Transform rh) => suspect = value;
         public void ConfigureAnimations(SuspectController value, Animator target) { suspect = value; animator = target; }

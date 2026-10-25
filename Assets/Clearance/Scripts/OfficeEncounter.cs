@@ -16,6 +16,7 @@ namespace Clearance
         [SerializeField] float revealDistance = 3;
         Bounds deskBounds;
         Vector3 entryPosition;
+        PrisonerPresentation suspectPresentation;
         public bool SuspectRevealed { get; private set; }
         public float RevealedAt { get; private set; }
         public FirstPersonOfficer Player => player;
@@ -28,8 +29,11 @@ namespace Clearance
         public bool CommandGiven { get; private set; }
         public bool AllIdentified { get { foreach (var person in people) if (!person.Identified) return false; return true; } }
         public bool Failed => people[0].Harmed || people[1].Harmed || suspect.State == SuspectState.Down || suspect.State == SuspectState.Stunned;
+        public bool FailureAnimationPending => suspect.State == SuspectState.Down && suspectPresentation && !suspectPresentation.FallAnimationFinished;
+        public string FailureReason => suspect.State == SuspectState.Down ? "You shot an unarmed suspect. Mission failed." :
+            "Someone was injured. Mission failed. Verify identities before using force.";
         public bool ReadyForNextFloor => escort.Returned && AllIdentified && !Failed;
-        public string Objective => Failed ? "Encounter failed - a person was injured. Press R to retry." :
+        public string Objective => Failed ? (FailureAnimationPending ? "Wait for the situation to settle." : FailureReason) :
             !SuspectRevealed ? "Approach reception carefully while looking at the desk." :
             !CommandGiven ? "One person stood up. Q: Both of you, hands up!" : !AllIdentified ?
             "Inspect BOTH people with your flashlight from within 3.5 m." :
@@ -45,6 +49,7 @@ namespace Clearance
         void Awake()
         {
             entryPosition = player.transform.position;
+            suspectPresentation = suspect.GetComponentInChildren<PrisonerPresentation>();
             if (!receptionDesk) receptionDesk = GameObject.Find("Front Desk")?.transform;
             deskBounds = new Bounds(receptionDesk ? receptionDesk.position : suspect.transform.position, Vector3.zero);
             if (receptionDesk)

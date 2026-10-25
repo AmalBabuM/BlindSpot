@@ -14,6 +14,9 @@ namespace Clearance
         public bool Checked { get; private set; }
         public string Label => label;
         public float Progress => Mathf.Clamp01(dwell / dwellSeconds);
+        public bool IsScanning => !Checked && dwell > 0;
+        public float CompletedAt { get; private set; } = -100;
+        public float ProgressFor(Camera observer) => observerDwell.TryGetValue(observer, out float value) ? Mathf.Clamp01(value / dwellSeconds) : 0;
         public void Configure(string value) => label = value;
         public void Observe(Camera view, DecisionScore score, bool flashlightOn, Transform observerRoot = null)
         {
@@ -37,9 +40,14 @@ namespace Clearance
             foreach (float value in observerDwell.Values) dwell = Mathf.Max(dwell, value);
             if (observerDwell[view] < dwellSeconds) return;
             Checked = true;
+            CompletedAt = Time.unscaledTime;
             score.Record(name, score.Rules.cornerChecked, label + " checked with flashlight");
         }
-        public void StopObserving(Camera view) { observerDwell.Remove(view); }
+        public void StopObserving(Camera view)
+        {
+            observerDwell.Remove(view); dwell = 0;
+            foreach (float value in observerDwell.Values) dwell = Mathf.Max(dwell, value);
+        }
         void OnDrawGizmos() { Gizmos.color = Color.cyan; Gizmos.DrawWireSphere(transform.position, .2f); }
     }
 }

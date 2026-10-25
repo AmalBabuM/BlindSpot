@@ -50,18 +50,32 @@ namespace Clearance.Editor
             var guidance = hud.Guidance;
             var actions = office.Player.GetComponent<OfficerActions>();
             Check(squad.ChoiceMade && squad.Order == SquadOrder.Follow, "Assistant did not follow automatically");
+            Check(guidance, "Guidance was not created");
+            if (guidance.FirstCardShownAt < 0)
+                Check(guidance.IntroPending && !guidance.CardOpen && hud.CardOpacity == 0, "Instruction appeared before the four-second delay");
+            yield return 4.2f;
+            Check(guidance.FirstCardShownAt - guidance.ArrivalVisibleAt >= 4, "Instruction did not wait four seconds after the first visible frame");
             Check(guidance && guidance.CardOpen && guidance.Step == OfficeBriefing.Visibility && Time.timeScale == 0 && office.Player.InteractionBlocked,
-                "Dark arrival instruction failed to pause controls");
+                "Torch instruction failed to pause controls");
+            Check(guidance.Instruction.Contains("reception lights are on") && !actions.FlashlightOn, "Startup did not distinguish room lighting from the player's torch");
+            Check(hud.CardOpacity > .95f && guidance.SecondaryChoice == "Close", "Instruction fade-in / Close choice missing");
             Check(!actions.FlashlightOn && !hud.ControlsOpen, "Flashlight/help did not start closed");
             hud.ToggleControls(); Check(hud.ControlsOpen, "Controls drawer failed to open");
             hud.ToggleControls(); Check(!hud.ControlsOpen && office.Player.InteractionBlocked, "Closing controls bypassed instruction gate");
+            int beforeClose = office.Score.Total;
+            guidance.Dismiss();
+            Check(!guidance.CardOpen && guidance.CurrentTask.Contains("Press F") && office.Score.Total == beforeClose, "Close bypassed task or removed its help instruction");
+            yield return .6f;
+            Check(hud.CardOpacity < .01f && Time.timeScale == 1, "Dismissed instruction failed to fade out / resume");
             int beforeLight = office.Score.Total;
             guidance.TurnOnFlashlight();
+            Check(!guidance.CardOpen && actions.FlashlightOn, "Next notification appeared without a gap");
+            yield return 1.6f;
             Check(actions.FlashlightOn && guidance.Step == OfficeBriefing.Reception && office.Score.Total == beforeLight + 50, "Flashlight action/reward missing");
             guidance.TurnOnFlashlight(); Check(office.Score.Total == beforeLight + 50, "Flashlight reward could be farmed");
             guidance.Continue();
             Check(!guidance.CardOpen && Time.timeScale == 1 && !office.Player.InteractionBlocked, "Continue failed to resume patrol");
-            yield return .1f;
+            yield return .6f;
             Check(hud.ToastVisible, "Good decision notification missing");
             hud.ToggleControls(); Check(office.Player.InteractionBlocked, "Help drawer did not release mouse safely");
             hud.ToggleControls(); Check(!office.Player.InteractionBlocked, "Closing help failed to resume controls");
@@ -79,7 +93,10 @@ namespace Clearance.Editor
             office.Player.View.transform.rotation = Quaternion.LookRotation(deskDirection);
             yield return .8f;
             Check(office.SuspectRevealed && admin.IsKneeling && !office.People[1].IsKneeling, "Approach did not reveal only suspect");
+            if (Time.time - office.RevealedAt < 3.5f) Check(!guidance.CardOpen, "Suspect instruction interrupted the observation delay");
+            yield return 2.9f;
             Check(guidance.CardOpen && guidance.Step == OfficeBriefing.HandsUp, "Desk command instruction missing");
+            Check(Time.time - office.RevealedAt >= 3.5f, "Suspect instruction appeared before stand-up plus observation delay");
             guidance.Continue();
             Check(office.People[1].Animator.GetCurrentAnimatorStateInfo(0).IsName("Idle"), "Suspect failed to stand from cover");
             Check(Lightmapping.lightingSettings && Lightmapping.lightingSettings.bakedGI && !Lightmapping.lightingSettings.realtimeGI, "Lighting is not configured for baking");
@@ -100,7 +117,7 @@ namespace Clearance.Editor
             Check(!office.People[0].Identified && !office.People[1].Identified, "Identities were revealed before inspection");
             office.Command(office.People[0]);
             Check(office.People[0].HandsRaised && office.People[1].HandsRaised && office.Suspect.State == SuspectState.HandsUp, "Group command did not affect both people");
-            yield return .1f;
+            yield return 1.1f;
             Check(guidance.CardOpen && guidance.Step == OfficeBriefing.Identify, "Identification instruction missing");
             guidance.Continue();
             yield return .9f;
@@ -111,7 +128,7 @@ namespace Clearance.Editor
             Check(office.Suspect.State == SuspectState.VerifiedUnarmed, "Suspect could kneel before the admin was identified");
             admin.Inspect(2, false); Check(!admin.Identified, "Civilian identification accepted without flashlight");
             admin.Inspect(2, true); Check(office.AllIdentified, "Identification did not finish");
-            yield return .1f;
+            yield return 1.1f;
             Check(guidance.CardOpen && guidance.Step == OfficeBriefing.Kneel, "Verified-suspect instruction missing");
             guidance.Continue();
             office.Command(admin); Check(office.Suspect.State == SuspectState.VerifiedUnarmed, "Civilian was treated as suspect");

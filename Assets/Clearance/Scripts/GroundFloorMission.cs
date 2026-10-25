@@ -22,7 +22,7 @@ namespace Clearance
         { officer = p; actions = a; score = s; suspect = target; corners = points; room = bounds; }
         void Update()
         {
-            if (Complete || !officer.HasControl) return;
+            if (Complete || !officer.HasControl || office && office.Failed) return;
             foreach (var corner in corners) corner.Observe(officer.View, score, actions.FlashlightOn);
             if (!office && !entered && room.Contains(officer.transform.position + Vector3.up))
             {

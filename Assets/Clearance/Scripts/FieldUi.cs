@@ -9,6 +9,7 @@ namespace Clearance
         public static readonly Color Accent = new Color(.23f, .83f, .79f);
         public static readonly Color Success = new Color(.39f, .91f, .66f);
         public static GUIStyle Title, Body, Small, Eyebrow, ButtonText;
+        public static float Opacity = 1;
         public static void Prepare()
         {
             if (Title != null) return;
@@ -25,7 +26,7 @@ namespace Clearance
             style.normal.textColor = color; return style;
         }
         public static void Rounded(Rect rect, Color color, float radius = 14)
-        { GUI.DrawTexture(rect, Texture2D.whiteTexture, ScaleMode.StretchToFill, true, 0, color, 0, radius); }
+        { color.a *= Opacity; GUI.DrawTexture(rect, Texture2D.whiteTexture, ScaleMode.StretchToFill, true, 0, color, 0, radius); }
         public static void Panel(Rect rect)
         {
             Rounded(new Rect(rect.x, rect.y + 3, rect.width, rect.height), new Color(0, 0, 0, .2f));

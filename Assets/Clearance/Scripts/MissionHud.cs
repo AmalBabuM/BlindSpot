@@ -16,6 +16,10 @@ namespace Clearance
         readonly Queue<Toast> toasts = new Queue<Toast>(6);
         Toast toast;
         float toastUntil;
+        float toastStarted, cardOpacity;
+        OfficeBriefing displayedStep;
+        string cardTitle, cardInstruction, cardPrimary, cardSecondary;
+        public float CardOpacity => cardOpacity;
         bool hasToast, controlsOwnBlock;
         string scoreText;
         public bool ControlsOpen { get; private set; }
@@ -53,8 +57,16 @@ namespace Clearance
         void Update()
         {
             if (hasToast && Time.unscaledTime >= toastUntil) hasToast = false;
-            if (!hasToast && toasts.Count > 0)
-            { toast = toasts.Dequeue(); hasToast = true; toastUntil = Time.unscaledTime + 3.2f; }
+            if (!hasToast && toasts.Count > 0 && (!mission.Office || !mission.Office.FailureAnimationPending))
+            { toast = toasts.Dequeue(); hasToast = true; toastStarted = Time.unscaledTime; toastUntil = toastStarted + 3.8f; }
+            bool wantCard = guidance && guidance.CardOpen && !ControlsOpen;
+            if (wantCard && cardOpacity <= .001f)
+            {
+                displayedStep = guidance.Step; cardTitle = guidance.Title; cardInstruction = guidance.Instruction;
+                cardPrimary = guidance.PrimaryChoice; cardSecondary = guidance.SecondaryChoice;
+            }
+            bool sameCard = wantCard && displayedStep == guidance.Step;
+            cardOpacity = Mathf.MoveTowards(cardOpacity, sameCard ? 1 : 0, Time.unscaledDeltaTime / .5f);
         }
         public void ToggleControls()
         {
@@ -72,15 +84,17 @@ namespace Clearance
         }
         void OnGUI()
         {
+            if (guidance && Event.current.type == EventType.Repaint) guidance.NotifyViewReady();
             // IMGUI keyboard events remain available while a decision pauses physics.
             if (Event.current.type == EventType.KeyDown)
             {
                 if (Event.current.keyCode == KeyCode.I) { ToggleControls(); Event.current.Use(); }
                 else if (ControlsOpen && Event.current.keyCode == KeyCode.Escape) { ToggleControls(); Event.current.Use(); }
-                else if (guidance && guidance.DarkArrival && Event.current.keyCode == KeyCode.F)
+                else if (guidance && guidance.FlashlightInstructionActive && Event.current.keyCode == KeyCode.F)
                 { guidance.TurnOnFlashlight(); Event.current.Use(); }
             }
             FieldUi.Prepare();
+            FieldUi.Opacity = 1;
             Matrix4x4 previous = GUI.matrix;
             Color previousColor = GUI.color;
             int previousDepth = GUI.depth;
@@ -88,25 +102,25 @@ namespace Clearance
             float width = Screen.width / scale;
             GUI.matrix = Matrix4x4.Scale(new Vector3(scale, scale, 1));
             GUI.depth = -20; GUI.color = Color.white;
-            if (guidance && guidance.DarkArrival)
-                GUI.DrawTexture(new Rect(0, 0, width, 720), Texture2D.whiteTexture, ScaleMode.StretchToFill, true, 0, new Color(0, 0, 0, .97f), 0, 0);
             FieldUi.Panel(new Rect(width - 172, 20, 152, 62));
             GUI.Label(new Rect(width - 154, 28, 120, 18), "DECISION POINTS", FieldUi.Eyebrow);
             GUI.Label(new Rect(width - 154, 45, 120, 32), scoreText ?? "0", FieldUi.Title);
             if (hasToast)
             {
-                GUI.color = new Color(1, 1, 1, Mathf.Clamp01((toastUntil - Time.unscaledTime) / .4f));
+                float alpha = Mathf.SmoothStep(0, 1, Mathf.Clamp01(Mathf.Min((Time.unscaledTime - toastStarted) / .45f, (toastUntil - Time.unscaledTime) / .6f)));
+                GUI.color = new Color(1, 1, 1, alpha); FieldUi.Opacity = alpha;
                 float toastWidth = Mathf.Min(420, width - 390);
                 float x = (width - toastWidth) * .5f;
                 FieldUi.Panel(new Rect(x, 20, toastWidth, 76));
                 FieldUi.Rounded(new Rect(x + 12, 34, 3, 46), toast.good ? FieldUi.Success : new Color(1, .55f, .4f), 1);
                 GUI.Label(new Rect(x + 25, 29, toastWidth - 40, 22), toast.title, FieldUi.Eyebrow);
                 GUI.Label(new Rect(x + 25, 51, toastWidth - 40, 39), toast.reason, FieldUi.Small);
-                GUI.color = Color.white;
+                GUI.color = Color.white; FieldUi.Opacity = 1;
             }
             if ((!guidance || !guidance.CardOpen) && officer.HasControl)
             {
                 FieldUi.Rounded(new Rect(width * .5f - 2, 358, 4, 4), Color.white, 2);
+                if (!mission.Office || !mission.Office.Failed) DrawScanFeedback(width);
                 if (!string.IsNullOrEmpty(actions.Prompt))
                 {
                     float promptWidth = Mathf.Min(660, width - 160);
@@ -115,7 +129,7 @@ namespace Clearance
                     GUI.Label(new Rect(x + 15, 615, promptWidth - 30, 28), actions.Prompt, FieldUi.Small);
                 }
             }
-            if (guidance && guidance.CardOpen) DrawInstruction(width);
+            if (guidance && cardOpacity > .001f && !ControlsOpen) DrawInstruction(width);
             else if (mission.Complete)
             {
                 FieldUi.Panel(new Rect(width * .5f - 250, 260, 500, 160));
@@ -123,7 +137,7 @@ namespace Clearance
                 if (FieldUi.Button(new Rect(width * .5f - 220, 350, 440, 44), "Play again", true))
                     SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
             }
-            else if (!officer.HasControl && !officer.InteractionBlocked)
+            else if (!officer.HasControl && !officer.InteractionBlocked && (!guidance || !guidance.IntroPending))
             {
                 if (FieldUi.Button(new Rect(width * .5f - 130, 335, 260, 48), "Resume patrol", true)) officer.SetCursor(true);
             }
@@ -133,21 +147,46 @@ namespace Clearance
         }
         void DrawInstruction(float width)
         {
+            float alpha = Mathf.SmoothStep(0, 1, cardOpacity);
+            GUI.color = new Color(1, 1, 1, alpha); FieldUi.Opacity = alpha;
+            bool previousEnabled = GUI.enabled;
+            GUI.enabled = previousEnabled && guidance.CardOpen && guidance.Step == displayedStep && cardOpacity >= .95f;
             float cardWidth = Mathf.Min(580, width - 40);
             float x = (width - cardWidth) * .5f;
             FieldUi.Panel(new Rect(x, 222, cardWidth, 270));
             GUI.Label(new Rect(x + 28, 242, cardWidth - 56, 20), "FIELD BRIEFING", FieldUi.Eyebrow);
-            GUI.Label(new Rect(x + 28, 270, cardWidth - 56, 36), guidance.Title, FieldUi.Title);
-            GUI.Label(new Rect(x + 28, 318, cardWidth - 56, 94), guidance.Instruction, FieldUi.Body);
-            if (FieldUi.Button(new Rect(x + 28, 426, cardWidth - 228, 44), guidance.PrimaryChoice, true)) guidance.Continue();
-            if (FieldUi.Button(new Rect(x + cardWidth - 184, 426, 156, 44), guidance.SecondaryChoice)) ToggleControls();
+            GUI.Label(new Rect(x + 28, 270, cardWidth - 56, 36), cardTitle, FieldUi.Title);
+            GUI.Label(new Rect(x + 28, 318, cardWidth - 56, 94), cardInstruction, FieldUi.Body);
+            if (FieldUi.Button(new Rect(x + 28, 426, cardWidth - 228, 44), cardPrimary, true)) guidance.Continue();
+            if (FieldUi.Button(new Rect(x + cardWidth - 184, 426, 156, 44), cardSecondary)) guidance.Dismiss();
+            GUI.enabled = previousEnabled; GUI.color = Color.white; FieldUi.Opacity = 1;
+        }
+        void DrawScanFeedback(float width)
+        {
+            ObservationPoint active = null, recent = null;
+            foreach (var corner in mission.Corners)
+            {
+                if (corner.IsScanning && (!active || corner.Progress > active.Progress)) active = corner;
+                if (corner.Checked && Time.unscaledTime - corner.CompletedAt < 2 && (!recent || corner.CompletedAt > recent.CompletedAt)) recent = corner;
+            }
+            var point = active ? active : recent;
+            if (!point) return;
+            float x = width * .5f - 190;
+            FieldUi.Panel(new Rect(x, 524, 380, 68));
+            string label = active ? (point.ProgressFor(officer.View) > 0 ? "SCANNING CORNER" : "ASSISTANT SCANNING CORNER") : "CORNER SCANNED";
+            GUI.Label(new Rect(x + 16, 533, 348, 20), label, FieldUi.Eyebrow);
+            GUI.Label(new Rect(x + 16, 553, 348, 22), point.Label, FieldUi.Small);
+            FieldUi.Rounded(new Rect(x + 16, 580, 348, 4), new Color(.16f, .22f, .29f), 2);
+            FieldUi.Rounded(new Rect(x + 16, 580, 348 * (active ? point.Progress : 1), 4), active ? FieldUi.Accent : FieldUi.Success, 2);
         }
         void DrawControls(float width)
         {
             float drawerWidth = Mathf.Min(960, width - 40);
-            FieldUi.Panel(new Rect(20, 500, drawerWidth, 140));
+            FieldUi.Panel(new Rect(20, 390, drawerWidth, 250));
+            GUI.Label(new Rect(42, 406, drawerWidth - 100, 22), "CURRENT / NEXT ACTION", FieldUi.Eyebrow);
+            if (FieldUi.Button(new Rect(drawerWidth - 30, 401, 36, 30), "X")) ToggleControls();
+            GUI.Label(new Rect(42, 442, drawerWidth - 44, 63), guidance ? guidance.CurrentTask : mission.Suspect.Status, FieldUi.Body);
             GUI.Label(new Rect(42, 516, drawerWidth - 100, 22), "FIELD CONTROLS", FieldUi.Eyebrow);
-            if (FieldUi.Button(new Rect(drawerWidth - 30, 511, 36, 30), "X")) ToggleControls();
             float column = (drawerWidth - 44) / 3;
             GUI.Label(new Rect(42, 550, column, 80), "WASD  Move\nMouse  Look around\nShift  Move carefully", FieldUi.Body);
             GUI.Label(new Rect(42 + column, 550, column, 80), "F  Flashlight\nQ  Voice command\nE  Interact / push door", FieldUi.Body);
