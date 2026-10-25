@@ -27,11 +27,15 @@ namespace Clearance
         public GroundFloorMission Mission => mission;
         public DecisionScore Score => score;
         public string Status => Order == SquadOrder.Follow ? "You lead / Officers follow" :
-            Order == SquadOrder.CoverCorners ? "Team first / Covering corners" : "Choose who leads the entry";
+            Order == SquadOrder.CoverCorners ? "Team covering corners" : "Assistant ready";
         public void Configure(FirstPersonOfficer player, GroundFloorMission m, DecisionScore s,
             AssistingOfficer[] team, Transform[] cover, NavMeshData data)
         { leader = player; mission = m; score = s; officers = team; coverPositions = cover; navigation = data; }
-        void OnEnable() { if (navigation) navigationInstance = NavMesh.AddNavMeshData(navigation); }
+        void OnEnable()
+        {
+            if (navigation) navigationInstance = NavMesh.AddNavMeshData(navigation);
+            if (mission && mission.Office) Order = SquadOrder.Follow;
+        }
         void OnDisable() { if (navigationInstance.valid) navigationInstance.Remove(); }
         public void LeadEntry()
         {
@@ -47,6 +51,7 @@ namespace Clearance
         }
         void Update()
         {
+            if (mission.Office) return; // Reception has one automatic accompanying assistant.
             if (mission.Complete || Keyboard.current == null) return;
             var keys = Keyboard.current;
             if (!ChoiceMade)

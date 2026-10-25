@@ -43,7 +43,7 @@ namespace Clearance
             {
                 State = SuspectState.Considering;
                 respondsAt = Time.time + responseSeconds;
-                score.Record("kneel-command", 0, "Kneel command issued after verifying no weapon");
+                score.Record("kneel-command", score.Rules.commandAccepted, "Good: ordered surrender after verifying no weapon");
                 return true;
             }
             if (State != SuspectState.Armed && State != SuspectState.Alerted) return false;

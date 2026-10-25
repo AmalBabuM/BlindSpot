@@ -15,7 +15,6 @@ namespace Clearance
         FirstPersonOfficer player;
         Vector3 leftClosed, rightClosed;
         bool choosing, warningDialog;
-        GUIStyle titleStyle, bodyStyle;
         public bool IsOpen { get; private set; }
         public int OpenCount { get; private set; }
         public bool IsDialogOpen => choosing || warningDialog;
@@ -64,26 +63,25 @@ namespace Clearance
         void OnGUI()
         {
             if (!IsDialogOpen) return;
-            GUI.matrix = Matrix4x4.Scale(new Vector3(Screen.width / 1280f, Screen.height / 720f, 1));
-            GUI.color = new Color(.025f, .04f, .055f, .98f);
-            GUI.DrawTexture(new Rect(335, 210, 610, 280), Texture2D.whiteTexture);
-            GUI.color = Color.white;
-            if (titleStyle == null)
-            {
-                titleStyle = new GUIStyle(GUI.skin.label) { fontSize = 25, fontStyle = FontStyle.Bold };
-                bodyStyle = new GUIStyle(GUI.skin.label) { fontSize = 19, wordWrap = true };
-            }
-            GUI.Label(new Rect(360, 232, 560, 45), warningDialog ? "LIFT UNSAFE" : "USE ELEVATOR", titleStyle);
-            GUI.Label(new Rect(360, 291, 555, 90), warningDialog ? warning : "Choose how to continue to the next floor.", bodyStyle);
+            FieldUi.Prepare();
+            var previous = GUI.matrix;
+            float scale = Screen.height / 720f;
+            float x = Screen.width / scale * .5f - 290;
+            GUI.matrix = Matrix4x4.Scale(new Vector3(scale, scale, 1));
+            FieldUi.Panel(new Rect(x, 222, 580, 270));
+            GUI.Label(new Rect(x + 28, 242, 524, 20), "FLOOR ACCESS", FieldUi.Eyebrow);
+            GUI.Label(new Rect(x + 28, 270, 524, 36), warningDialog ? "LIFT UNSAFE" : "USE ELEVATOR", FieldUi.Title);
+            GUI.Label(new Rect(x + 28, 318, 524, 94), warningDialog ? warning : "Choose how to continue to the next floor.", FieldUi.Body);
             if (warningDialog)
             {
-                if (GUI.Button(new Rect(360, 407, 555, 48), "Understood - use the stairs")) Dismiss();
+                if (FieldUi.Button(new Rect(x + 28, 426, 524, 44), "Understood - use the stairs", true)) Dismiss();
             }
             else
             {
-                if (GUI.Button(new Rect(360, 407, 265, 48), "Use lift / Go to upper floor")) ChooseUpperFloor();
-                if (GUI.Button(new Rect(650, 407, 265, 48), "Stay on this floor")) Dismiss();
+                if (FieldUi.Button(new Rect(x + 28, 426, 250, 44), "Use lift / Upper floor", true)) ChooseUpperFloor();
+                if (FieldUi.Button(new Rect(x + 300, 426, 252, 44), "Stay on this floor")) Dismiss();
             }
+            GUI.matrix = previous;
         }
     }
 }

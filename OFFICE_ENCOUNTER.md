@@ -1,6 +1,6 @@
 # Office entrance encounter
 
-Open GroundFloor and press Play. Choose L to lead or C to send your assistant first.
+Open GroundFloor and press Play. Your assistant follows automatically. Read the centre instruction cards and select their actions to continue. Press F (or click its action) for the initial flashlight step. The small bottom-left `i` button or I opens the controls drawer. See UI_GUIDE.md for UI behavior and scoring.
 
 1. Both people start kneeling behind the reception desk. Walk closer (within 3 metres of the desk) while facing it; only the suspect stands and looks at you. Turning toward the desk from the original spawn alone does not trigger this.
 2. Aim at either person and press Q. Both raise their hands; the employee stays kneeling.

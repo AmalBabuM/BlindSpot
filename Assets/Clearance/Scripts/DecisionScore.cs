@@ -15,6 +15,7 @@ namespace Clearance
         public string Latest { get; private set; } = "Observe first. Every decision matters.";
         public IReadOnlyList<string> Timeline => timeline;
         public event Action Changed;
+        public event Action<int, string> Awarded;
         public void Configure(ScoringRules value) => rules = value;
         void Awake() => started = Time.time;
 
@@ -25,6 +26,7 @@ namespace Clearance
             Latest = $"{points:+0;-0;0}  {reason}";
             timeline.Add($"{Time.time - started:000}s   {Latest}");
             Changed?.Invoke();
+            Awarded?.Invoke(points, reason);
         }
     }
 }

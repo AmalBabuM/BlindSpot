@@ -16,6 +16,7 @@ namespace Clearance
         int shotNumber;
         public bool Lethal { get; private set; }
         public bool FlashlightOn => flashlight && flashlight.enabled;
+        public void SetFlashlight(bool value) { if (flashlight) flashlight.enabled = value; }
         public string Prompt { get; private set; }
         public string Message { get; private set; } = "Ground floor: check both marked corners, resolve the suspect, then secure the room.";
         public float LastShotAt { get; private set; } = -100;

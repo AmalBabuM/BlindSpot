@@ -22,7 +22,7 @@ namespace Clearance
         public void ConfigureSquad(SquadCoordinator value) => squad = value;
         public void Configure(Camera camera, GroundFloorMission value) { view = camera; mission = value; }
         void Awake() => controller = GetComponent<CharacterController>();
-        void Start() => SetCursor(!squad || squad.ChoiceMade);
+        void Start() => SetCursor(!mission.Office && (!squad || squad.ChoiceMade));
         void OnDisable() => SetCursor(false);
         void OnControllerColliderHit(ControllerColliderHit hit)
         {

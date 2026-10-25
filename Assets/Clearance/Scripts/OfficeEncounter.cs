@@ -17,6 +17,7 @@ namespace Clearance
         Bounds deskBounds;
         Vector3 entryPosition;
         public bool SuspectRevealed { get; private set; }
+        public float RevealedAt { get; private set; }
         public FirstPersonOfficer Player => player;
         public SuspectController Suspect => suspect;
         public DecisionScore Score => score;
@@ -77,6 +78,7 @@ namespace Clearance
                     Vector3.Dot(facing.normalized, towardDesk.normalized) > .82f)
                 {
                     SuspectRevealed = true;
+                    RevealedAt = Time.time;
                     foreach (var person in people) if (!person.IsCivilian) person.StandFromCover();
                 }
             }
@@ -86,7 +88,7 @@ namespace Clearance
         }
         void OnGUI()
         {
-            if (!ReadyForNextFloor) return;
+            if (!ReadyForNextFloor || player.InteractionBlocked || Event.current.type != EventType.Repaint) return;
             var point = player.View.WorldToViewportPoint(nextFloor.position + Vector3.up * 1.5f);
             if (point.z <= 0) return;
             GUI.matrix = Matrix4x4.identity;
