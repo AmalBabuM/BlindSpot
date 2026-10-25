@@ -26,13 +26,16 @@ namespace Clearance.Editor
         }
         static void Process()
         {
-            if (File.Exists(Request) && File.ReadAllText(Request).Trim() == "pending" && !EditorApplication.isPlayingOrWillChangePlaymode)
-            { File.WriteAllText(Request, "running"); Start(); }
+            if (!File.Exists(Request) || EditorApplication.isPlayingOrWillChangePlaymode) return;
+            string request = File.ReadAllText(Request).Trim();
+            if (request == "pending" || request == "stun")
+            { File.WriteAllText(Request, "running"); SessionState.SetBool("Clearance.FeedbackStun", request == "stun"); Start(); }
         }
         [MenuItem("Clearance/Test Death And Scan Feedback")]
         public static void Start()
         {
             if (EditorApplication.isPlayingOrWillChangePlaymode) return;
+            if (!File.Exists(Request) || File.ReadAllText(Request).Trim() != "running") SessionState.SetBool("Clearance.FeedbackStun", false);
             SessionState.SetBool("Clearance.FeedbackTest", true); EditorApplication.EnterPlaymode();
         }
         static void Changed(PlayModeStateChange state)
@@ -47,7 +50,7 @@ namespace Clearance.Editor
             try
             {
                 if (routine.MoveNext()) next = Time.unscaledTime + Convert.ToSingle(routine.Current);
-                else Finish("PASS: scan progresses only with flashlight, resets when interrupted, awards once; unarmed-suspect death animation finishes before failure card and penalty notification.");
+                else Finish("PASS (" + (SessionState.GetBool("Clearance.FeedbackStun", false) ? "stun device" : "firearm") + "): scan checks pass; falling clip completes and body rests on floor before failure card or force notification.");
             }
             catch (Exception e) { Debug.LogException(e); Finish("FAIL: " + e); }
         }
@@ -61,6 +64,7 @@ namespace Clearance.Editor
         static void Check(bool value, string message) { if (!value) throw new Exception(message); }
         static IEnumerator Run()
         {
+            bool lethal = !SessionState.GetBool("Clearance.FeedbackStun", false);
             Application.runInBackground = true; yield return .2f;
             var office = UnityEngine.Object.FindAnyObjectByType<OfficeEncounter>();
             var hud = UnityEngine.Object.FindAnyObjectByType<MissionHud>();
@@ -100,18 +104,29 @@ namespace Clearance.Editor
             yield return 4.2f;
             var presentation = office.Suspect.GetComponentInChildren<PrisonerPresentation>();
             before = office.Score.Total;
-            office.Suspect.Hit(true, true);
+            office.Suspect.Hit(lethal, true);
             Check(office.FailureAnimationPending && !presentation.FallAnimationFinished, "Death was reported finished before the fall clip started");
             yield return .2f;
             Check(!guidance.CardOpen && Time.timeScale == 1 && !hud.ToastVisible, "Failure notification paused/interrupted the death animation");
             deadline = EditorApplication.timeSinceStartup + 15;
-            while (!guidance.CardOpen && EditorApplication.timeSinceStartup < deadline) yield return .1f;
+            bool floorPauseObserved = false;
+            while (!guidance.CardOpen && EditorApplication.timeSinceStartup < deadline)
+            {
+                if (presentation.FallAnimationFinished && office.FailureAnimationPending)
+                {
+                    floorPauseObserved = true;
+                    Check(Time.timeScale == 1 && !hud.ToastVisible, "UI interrupted the pause after the suspect reached the floor");
+                }
+                yield return .1f;
+            }
+            Check(floorPauseObserved, "No visible pause on the floor before notification");
             Check(presentation.FallAnimationFinished, "Fall clip did not finish");
             Check(guidance.CardOpen && guidance.Step == OfficeBriefing.Failed && guidance.Title == "MISSION FAILED", "Failure card missing after death");
-            Check(guidance.Instruction == "You shot an unarmed suspect. Mission failed.", "Wrong unarmed-suspect failure message");
-            Check(Time.timeScale == 0 && office.Score.Total == before + office.Score.Rules.unjustifiedShot, "Failure pause/penalty incorrect");
-            office.Suspect.Hit(true, true);
-            Check(office.Score.Total == before + office.Score.Rules.unjustifiedShot, "Repeat hits duplicated penalty");
+            Check(guidance.Instruction == (lethal ? "You shot an unarmed suspect. Mission failed." : "You used force on an unarmed suspect. Mission failed."), "Wrong unarmed-suspect failure message");
+            int expected = before + (lethal ? office.Score.Rules.unjustifiedShot : office.Score.Rules.nonLethal + office.Score.Rules.preciseNonLethal);
+            Check(Time.timeScale == 0 && office.Score.Total == expected, "Failure pause/score incorrect");
+            office.Suspect.Hit(lethal, true);
+            Check(office.Score.Total == expected, "Repeat hits duplicated score");
         }
     }
 }

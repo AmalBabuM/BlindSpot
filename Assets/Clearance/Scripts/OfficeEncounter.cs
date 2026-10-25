@@ -29,8 +29,10 @@ namespace Clearance
         public bool CommandGiven { get; private set; }
         public bool AllIdentified { get { foreach (var person in people) if (!person.Identified) return false; return true; } }
         public bool Failed => people[0].Harmed || people[1].Harmed || suspect.State == SuspectState.Down || suspect.State == SuspectState.Stunned;
-        public bool FailureAnimationPending => suspect.State == SuspectState.Down && suspectPresentation && !suspectPresentation.FallAnimationFinished;
+        public bool FailureAnimationPending => (suspect.State == SuspectState.Down || suspect.State == SuspectState.Stunned) &&
+            suspectPresentation && !suspectPresentation.FailureNotificationReady;
         public string FailureReason => suspect.State == SuspectState.Down ? "You shot an unarmed suspect. Mission failed." :
+            suspect.State == SuspectState.Stunned ? "You used force on an unarmed suspect. Mission failed." :
             "Someone was injured. Mission failed. Verify identities before using force.";
         public bool ReadyForNextFloor => escort.Returned && AllIdentified && !Failed;
         public string Objective => Failed ? (FailureAnimationPending ? "Wait for the situation to settle." : FailureReason) :

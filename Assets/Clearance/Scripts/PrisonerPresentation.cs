@@ -12,6 +12,8 @@ namespace Clearance
         SuspectPatrol patrol;
         CapsuleCollider hitCapsule;
         float handsWeight;
+        float fallCompletedAt = -1;
+        public bool FailureNotificationReady => FallAnimationFinished && fallCompletedAt >= 0 && Time.time - fallCompletedAt >= .6f;
         static readonly int Speed = Animator.StringToHash("Speed");
         static readonly int Surrender = Animator.StringToHash("Surrender");
         static readonly int Fallen = Animator.StringToHash("Fallen");
@@ -50,6 +52,11 @@ namespace Clearance
         }
         void LateUpdate()
         {
+            if (suspect && (suspect.State == SuspectState.Down || suspect.State == SuspectState.Stunned))
+            {
+                if (FallAnimationFinished && fallCompletedAt < 0) fallCompletedAt = Time.time;
+                return;
+            }
             if (!UsesAnimator || !animator.isHuman || !hitCapsule || !hitCapsule.enabled) return;
             bool handsUp = suspect.State == SuspectState.HandsUp || suspect.State == SuspectState.VerifiedUnarmed;
             handsWeight = Mathf.MoveTowards(handsWeight, handsUp ? 1 : 0, Time.deltaTime * 3);

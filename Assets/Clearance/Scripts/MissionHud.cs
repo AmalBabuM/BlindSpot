@@ -56,6 +56,11 @@ namespace Clearance
         }
         void Update()
         {
+            if (mission.Office && mission.Office.Failed)
+            {
+                if (hasToast && toast.good) hasToast = false;
+                while (toasts.Count > 0 && toasts.Peek().good) toasts.Dequeue();
+            }
             if (hasToast && Time.unscaledTime >= toastUntil) hasToast = false;
             if (!hasToast && toasts.Count > 0 && (!mission.Office || !mission.Office.FailureAnimationPending))
             { toast = toasts.Dequeue(); hasToast = true; toastStarted = Time.unscaledTime; toastUntil = toastStarted + 3.8f; }
