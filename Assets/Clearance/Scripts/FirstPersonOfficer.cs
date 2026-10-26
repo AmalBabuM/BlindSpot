@@ -27,7 +27,11 @@ namespace Clearance
         void OnControllerColliderHit(ControllerColliderHit hit)
         {
             var door = hit.collider.GetComponentInParent<PushDoor>();
-            if (door) door.Push(hit.point, hit.moveDirection);
+            if (door)
+            {
+                if (door.StairEncounter) door.StairEncounter.PlayerPushedDoor();
+                door.Push(hit.point, hit.moveDirection);
+            }
         }
         public void SetCursor(bool locked)
         {
@@ -39,7 +43,12 @@ namespace Clearance
             var keys = Keyboard.current;
             var mouse = Mouse.current;
             if (keys == null || mouse == null) return;
-            if (keys.escapeKey.wasPressedThisFrame) SetCursor(false);
+            if (keys.escapeKey.wasPressedThisFrame)
+            {
+                var pause = GetComponent<PatrolPause>();
+                if (pause) pause.Toggle(); else SetCursor(false);
+                return;
+            }
             if (!HasControl) return;
             Vector2 look = mouse.delta.ReadValue() * mouseSensitivity;
             transform.Rotate(0, look.x, 0);

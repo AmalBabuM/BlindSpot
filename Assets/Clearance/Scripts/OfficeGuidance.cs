@@ -16,6 +16,8 @@ namespace Clearance
         float resumeTimeScale = 1;
         float nextCardAt;
         bool introPending, receptionPending;
+        bool ended;
+        public void EndGuidance() { Close(); introPending = receptionPending = false; ended = true; enabled = false; }
         public double ArrivalVisibleAt { get; private set; } = -1;
         public double FirstCardShownAt { get; private set; } = -1;
         public bool IntroPending => introPending;
@@ -28,7 +30,8 @@ namespace Clearance
         public string SecondaryChoice { get; private set; }
         public string Hint { get; private set; } = "Approach reception carefully.";
         public bool FlashlightInstructionActive => !FlashlightLearned && Step == OfficeBriefing.Visibility;
-        public string CurrentTask => office.Failed ? office.Objective : !FlashlightLearned ? "Press F to turn on your flashlight before advancing." : office.Objective;
+        public string CurrentTask => office.Failed ? office.Objective : office.ReadyForNextFloor && office.GetComponent<GroundFloorMission>().Stairs ?
+            office.GetComponent<GroundFloorMission>().Stairs.Objective : !FlashlightLearned ? "Press F to turn on your flashlight before advancing." : office.Objective;
         public void Configure(OfficeEncounter encounter, OfficerActions controls) { office = encounter; actions = controls; }
         void Start()
         {
@@ -44,6 +47,7 @@ namespace Clearance
         }
         void Update()
         {
+            if (ended || office.Player.GetComponent<PatrolPause>() is PatrolPause pause && pause.IsOpen) return;
             if (office.Failed)
             {
                 introPending = false; receptionPending = false;
@@ -128,8 +132,8 @@ namespace Clearance
                     PrimaryChoice = "Escort both people to safety"; Hint = "Wait for both people to reach the exit and your assistant to return."; break;
                 case OfficeBriefing.Stairs:
                     Title = "RECEPTION SECURED";
-                    Instruction = "Both people have reached the exit and your assistant is back. Continue through the push door to the stairs. The lift is unsafe.";
-                    PrimaryChoice = "Continue to the stairs"; Hint = "Push the door and follow the stairs marker."; break;
+                    Instruction = "Both people are safe and your assistant is back. An armed suspect may be near the stairs. Aim at the stair door and press E to open it slowly. Pushing in suddenly is dangerous. Then Q: Drop the gun, hands up; Q again to surrender.";
+                    PrimaryChoice = "Approach the stair door carefully"; Hint = "E: Open stair door slowly. Q: Command suspect. Cover your assistant during cuffs."; break;
                 default:
                     Title = "MISSION FAILED";
                     Instruction = office.FailureReason;

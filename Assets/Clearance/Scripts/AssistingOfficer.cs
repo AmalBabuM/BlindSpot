@@ -31,6 +31,7 @@ namespace Clearance
         int coverIndex;
         float cuffTime;
         bool applyingCuffs;
+        SuspectController cuffTarget;
         readonly Collider[] nearbyDoors = new Collider[32];
         float nextDoorScan;
         public string Status { get; private set; } = "Ready";
@@ -59,6 +60,14 @@ namespace Clearance
         {
             if (!agent.enabled || !agent.isOnNavMesh) return;
             if (animator) animator.SetFloat("Speed", agent.velocity.magnitude);
+            var stairs = squad.Mission.Stairs;
+            if (stairs && stairs.Finished) { agent.isStopped = true; applyingCuffs = false; return; }
+            if (stairs && stairs.Started && stairs.CarefulEntry && office && office.Escort.Returned)
+            {
+                var state = stairs.Suspect.State;
+                if (state == SuspectState.HandsUp || state == SuspectState.VerifiedUnarmed || state == SuspectState.Considering ||
+                    state == SuspectState.Surrendered || state == SuspectState.Restrained) { SupportSurrender(stairs.Suspect); return; }
+            }
             if (office && office.Escort.IsActive)
             { applyingCuffs = false; Status = office.Escort.Status; return; }
             if (!squad.ChoiceMade || squad.Mission.Complete)
@@ -66,7 +75,7 @@ namespace Clearance
             var suspectState = squad.Mission.Suspect.State;
             bool supporting = suspectState == SuspectState.HandsUp || suspectState == SuspectState.VerifiedUnarmed ||
                 suspectState == SuspectState.Considering || suspectState == SuspectState.Surrendered || suspectState == SuspectState.Restrained;
-            if (supporting && !(office && office.Escort.Returned)) { SupportSurrender(); return; }
+            if (supporting && !(office && office.Escort.Returned)) { SupportSurrender(squad.Mission.Suspect); return; }
             applyingCuffs = false;
             bool covering = squad.Order == SquadOrder.CoverCorners;
             Vector3 movement = squad.Leader.transform.position - leaderMotionSample;
@@ -139,9 +148,10 @@ namespace Clearance
                 Status = covering ? "Advancing carefully / Watching ahead" : "Catching up with you";
             }
         }
-        void SupportSurrender()
+        void SupportSurrender(SuspectController suspect)
         {
-            var suspect = squad.Mission.Suspect;
+            if (cuffTarget != suspect) { cuffTime = 0; applyingCuffs = false; }
+            cuffTarget = suspect;
             bool kneeling = suspect.State == SuspectState.Considering || suspect.State == SuspectState.Surrendered || suspect.State == SuspectState.Restrained;
             Vector3 desired = kneeling ? suspect.transform.position - suspect.transform.forward * .75f :
                 suspect.transform.position + suspect.transform.right * 1.25f - suspect.transform.forward * .25f;
@@ -197,7 +207,7 @@ namespace Clearance
             if (flashlight) flashlight.transform.rotation = observationView.transform.rotation;
             if (applyingCuffs)
             {
-                var suspectAnimator = squad.Mission.Suspect.GetComponentInChildren<Animator>();
+                var suspectAnimator = cuffTarget ? cuffTarget.GetComponentInChildren<Animator>() : null;
                 if (suspectAnimator && suspectAnimator.isHuman)
                 {
                     ReachWrist(HumanBodyBones.LeftUpperArm, HumanBodyBones.LeftLowerArm, suspectAnimator.GetBoneTransform(HumanBodyBones.LeftHand));
@@ -245,6 +255,7 @@ namespace Clearance
                 var pushDoor = collider.GetComponentInParent<PushDoor>();
                 if (pushDoor)
                 {
+                    if (pushDoor.StairEncounter && !pushDoor.StairEncounter.CarefulEntry) { agent.isStopped = true; continue; }
                     pushDoor.Push(collider.bounds.center, agent.desiredVelocity);
                     if (!pushDoor.IsPassable) agent.isStopped = true;
                     continue;

@@ -14,6 +14,11 @@ namespace Clearance
         float respondsAt;
         float weaponCheck;
         float handsUpAt;
+        string scorePrefix = "";
+        public GameObject Weapon => weapon;
+        public void ConfigureStairSuspect(DecisionScore value)
+        { score = value; scorePrefix = "stairs-"; State = SuspectState.Armed; leftArm = rightArm = null; if (weapon) weapon.SetActive(true); }
+        void Record(string id, int points, string reason) => score.Record(scorePrefix + id, points, reason);
         [SerializeField] float inspectionSeconds = 1.25f;
         public float WeaponCheckProgress => Mathf.Clamp01(weaponCheck / inspectionSeconds);
         public SuspectState State { get; private set; }
@@ -43,14 +48,14 @@ namespace Clearance
             {
                 State = SuspectState.Considering;
                 respondsAt = Time.time + responseSeconds;
-                score.Record("kneel-command", score.Rules.commandAccepted, "Good: ordered surrender after verifying no weapon");
+                Record("kneel-command", score.Rules.commandAccepted, "Good: ordered surrender after verifying no weapon");
                 return true;
             }
             if (State != SuspectState.Armed && State != SuspectState.Alerted) return false;
             State = SuspectState.HandsUp;
             handsUpAt = Time.time;
             if (useAnimatedFall && weapon) weapon.SetActive(false);
-            score.Record("command", score.Rules.commandAccepted, "Clear command issued; allow time to comply");
+            Record("command", score.Rules.commandAccepted, "Clear command issued; allow time to comply");
             return true;
         }
         public void InspectForWeapons(float seconds, bool flashlightOn)
@@ -60,7 +65,7 @@ namespace Clearance
             weaponCheck += Mathf.Max(0, seconds);
             if (weaponCheck < inspectionSeconds) return;
             State = SuspectState.VerifiedUnarmed;
-            score.Record("weapon-inspection", 0, "Visual check completed: no weapon found");
+            Record("weapon-inspection", 0, "Visual check completed: no weapon in hand");
         }
         public void ResetWeaponInspection() { if (State == SuspectState.HandsUp) weaponCheck = 0; }
         public void ConfigureUnarmedEncounter() { if (weapon) weapon.SetActive(false); }
@@ -79,7 +84,7 @@ namespace Clearance
         {
             if (State != SuspectState.Surrendered) return;
             State = SuspectState.Restrained;
-            score.Record("restraint", score.Rules.restraint, "Suspect restrained without injury");
+            Record("restraint", score.Rules.restraint, "Suspect restrained without injury");
         }
         public void Hit(bool lethal, bool precise)
         {
@@ -87,16 +92,16 @@ namespace Clearance
             // Carrying a weapon alone is not an authored immediate threat in this tutorial.
             if (lethal)
             {
-                score.Record("unjustified-shot", score.Rules.unjustifiedShot, "Unjustified firearm use; no immediate attack");
+                Record("unjustified-shot", score.Rules.unjustifiedShot, "Unjustified firearm use; no immediate attack");
                 State = SuspectState.Down;
             }
             else
             {
                 bool complying = State == SuspectState.Surrendered || State == SuspectState.Considering || State == SuspectState.HandsUp || State == SuspectState.VerifiedUnarmed;
                 if (complying)
-                    score.Record("unnecessary-force", score.Rules.unnecessaryForce, "Force used while the suspect was complying");
-                score.Record("stun", score.Rules.nonLethal, "Non-lethal neutralization");
-                if (precise && !complying) score.Record("precise-stun", score.Rules.preciseNonLethal, "Precise non-lethal hit");
+                    Record("unnecessary-force", score.Rules.unnecessaryForce, "Force used while the suspect was complying");
+                Record("stun", score.Rules.nonLethal, "Non-lethal neutralization");
+                if (precise && !complying) Record("precise-stun", score.Rules.preciseNonLethal, "Precise non-lethal hit");
                 State = SuspectState.Stunned;
             }
             if (weapon) weapon.SetActive(false);

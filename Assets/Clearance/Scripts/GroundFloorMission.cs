@@ -12,6 +12,8 @@ namespace Clearance
         [SerializeField] Bounds room = new Bounds(new Vector3(-12, 1, 4), new Vector3(5, 3, 5));
         [SerializeField] OfficeEncounter office;
         public OfficeEncounter Office => office;
+        public StairEncounter Stairs { get; private set; }
+        public void ConfigureStairs(StairEncounter value) => Stairs = value;
         public void ConfigureOffice(OfficeEncounter value) => office = value;
         bool entered;
         public bool Complete { get; private set; }
@@ -22,7 +24,7 @@ namespace Clearance
         { officer = p; actions = a; score = s; suspect = target; corners = points; room = bounds; }
         void Update()
         {
-            if (Complete || !officer.HasControl || office && office.Failed) return;
+            if (Complete || Stairs && Stairs.Finished || !officer.HasControl || office && office.Failed) return;
             foreach (var corner in corners) corner.Observe(officer.View, score, actions.FlashlightOn);
             if (!office && !entered && room.Contains(officer.transform.position + Vector3.up))
             {

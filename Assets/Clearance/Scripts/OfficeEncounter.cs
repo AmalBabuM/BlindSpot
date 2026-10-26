@@ -95,6 +95,8 @@ namespace Clearance
         }
         void OnGUI()
         {
+            var stairs = GetComponent<GroundFloorMission>().Stairs;
+            if (stairs && stairs.Finished) return;
             if (!ReadyForNextFloor || player.InteractionBlocked || Event.current.type != EventType.Repaint) return;
             var point = player.View.WorldToViewportPoint(nextFloor.position + Vector3.up * 1.5f);
             if (point.z <= 0) return;

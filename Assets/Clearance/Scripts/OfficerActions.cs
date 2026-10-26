@@ -56,9 +56,13 @@ namespace Clearance
                 Prompt = "He is watching you | Aim at him and press Q: Raise your hands!";
             if (elevator && hit.distance < 3) Prompt = elevator.IsOpen ? "E: Lift unsafe - use stairs" : "E: Use elevator / Choose floor";
             if (person) Prompt = person.Status;
-            if (pushDoor && hit.distance < 3) Prompt = "Walk into door to push it open / E: Push toward stairs";
+            if (pushDoor && hit.distance < 3) Prompt = pushDoor.StairEncounter ?
+                mission.Office.ReadyForNextFloor ? "E: Open stair door carefully | Pushing in suddenly risks an ambush" : "Secure reception and wait for your assistant before opening stairs" : "E: Open door slowly";
+            if (mission.Stairs && mission.Stairs.Started && suspect == mission.Stairs.Suspect) Prompt = mission.Stairs.Objective;
             if (keys.qKey.wasPressedThisFrame)
             {
+                if (mission.Stairs && suspect == mission.Stairs.Suspect && hit.distance <= commandRange)
+                { Message = mission.Stairs.Command(suspect); return; }
                 if (mission.Office) { Message = mission.Office.Command(person); return; }
                 bool kneelCommand = suspect && suspect.State == SuspectState.VerifiedUnarmed;
                 Message = suspect && hit.distance <= commandRange && suspect.Command()
@@ -74,7 +78,8 @@ namespace Clearance
                     Message = "Elevator selected. Choose a floor or stay here.";
                     return;
                 }
-                else if (pushDoor && hit.distance < 3) pushDoor.Push(hit.point, view.forward);
+                else if (pushDoor && hit.distance < 3)
+                { if (pushDoor.StairEncounter) pushDoor.StairEncounter.OpenCarefully(pushDoor); else pushDoor.OpenCarefully(transform.position); }
                 else if (suspect && hit.distance <= restraintRange && suspect.State == SuspectState.Surrendered) suspect.Restrain();
                 else if (person && person.Identified && person.IsCivilian) Message = "Office admin verified safe. Protect him.";
                 else if (door && hit.distance < 3) door.Toggle();

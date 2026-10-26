@@ -34,6 +34,8 @@ namespace Clearance.Editor
                         throw new InvalidOperationException("Unity could not switch to WebGL; check Web Build Support installation.");
                     return;
                 }
+                // This template owns Start Game and the pause/report return-to-menu destination.
+                PlayerSettings.WebGL.template = "PROJECT:ClearanceIntro";
                 EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene("Assets/Scenes/GroundFloor.unity", true) };
                 File.WriteAllText(Request, "building");
                 var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions {

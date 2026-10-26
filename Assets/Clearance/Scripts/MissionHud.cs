@@ -12,6 +12,7 @@ namespace Clearance
         [SerializeField] OfficerActions actions;
         [SerializeField] SquadCoordinator squad;
         OfficeGuidance guidance;
+        PatrolPause pause;
         struct Toast { public string title, reason; public bool good; }
         readonly Queue<Toast> toasts = new Queue<Toast>(6);
         Toast toast;
@@ -30,8 +31,13 @@ namespace Clearance
         { mission = m; score = s; officer = p; actions = a; }
         void Awake()
         {
+            pause = officer.GetComponent<PatrolPause>();
+            if (!pause) pause = officer.gameObject.AddComponent<PatrolPause>();
             if (mission && mission.Office)
             {
+                var stairs = mission.GetComponent<StairEncounter>();
+                if (!stairs) stairs = mission.gameObject.AddComponent<StairEncounter>();
+                stairs.Configure(mission.Office); mission.ConfigureStairs(stairs);
                 guidance = GetComponent<OfficeGuidance>();
                 if (!guidance) guidance = gameObject.AddComponent<OfficeGuidance>();
                 guidance.Configure(mission.Office, actions);
@@ -89,6 +95,7 @@ namespace Clearance
         }
         void OnGUI()
         {
+            if (pause && pause.IsOpen || mission.Stairs && mission.Stairs.Finished) return;
             if (guidance && Event.current.type == EventType.Repaint) guidance.NotifyViewReady();
             // IMGUI keyboard events remain available while a decision pauses physics.
             if (Event.current.type == EventType.KeyDown)
