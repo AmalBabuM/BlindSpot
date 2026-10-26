@@ -2,19 +2,19 @@
 window.playClearanceVideo = function (startGame) {
   const style = document.createElement('style');
   style.textContent = `
-    #clearance-intro { position:fixed; inset:0; z-index:10000; background:#05080c;
+    #clearance-intro { position:fixed; inset:0; z-index:10000; background:#10090b;
       color:#fff; font-family:Arial,sans-serif; transition:opacity .35s ease; }
     #clearance-intro video { width:100%; height:100%; object-fit:contain; }
-    #clearance-intro button { border:1px solid #64717f; border-radius:12px;
-      background:rgba(15,25,35,.9); color:white; padding:13px 24px; font-size:15px;
+    #clearance-intro button { border:1px solid #80636b; border-radius:12px;
+      background:rgba(28,20,22,.9); color:white; padding:13px 24px; font-size:15px;
       cursor:pointer; min-height:48px; }
-    #clearance-intro button:hover { background:#235454; border-color:#65d4cb; }
-    #clearance-intro button:focus-visible { outline:3px solid #65d4cb; outline-offset:4px; }
+    #clearance-intro button:hover { background:#792b35; border-color:#f06b68; }
+    #clearance-intro button:focus-visible { outline:3px solid #f06b68; outline-offset:4px; }
     #intro-skip { position:absolute; bottom:28px; right:28px; }
     #intro-prompt { position:absolute; inset:0; display:flex; align-items:center;
       justify-content:center; flex-direction:column; gap:16px; background:rgba(0,0,0,.35); }
     #intro-prompt[hidden] { display:none; }
-    #intro-status { position:absolute; bottom:38px; left:28px; font-size:14px; color:#c1ccd5; }
+    #intro-status { position:absolute; bottom:38px; left:28px; font-size:14px; color:#d9c8cc; }
     @media(prefers-reduced-motion:reduce) { #clearance-intro { transition:none; } }
   `;
   document.head.appendChild(style);

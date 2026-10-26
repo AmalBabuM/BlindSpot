@@ -41,7 +41,7 @@ namespace Clearance
             GUI.depth = -100; GUI.color = Color.white;
             float scale = Screen.height / 720f, width = Screen.width / scale;
             GUI.matrix = Matrix4x4.Scale(Vector3.one * scale);
-            FieldUi.Rounded(new Rect(0, 0, width, 720), new Color(0, .02f, .04f, .7f), 0);
+            FieldUi.Rounded(new Rect(0, 0, width, 720), new Color(.035f, .01f, .015f, .7f), 0);
             float x = width / 2 - 190;
             FieldUi.Panel(new Rect(x, 210, 380, 270));
             GUI.Label(new Rect(x + 28, 236, 324, 40), "PATROL PAUSED", FieldUi.Title);

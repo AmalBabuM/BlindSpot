@@ -189,7 +189,7 @@ namespace Clearance
             string label = active ? (point.ProgressFor(officer.View) > 0 ? "SCANNING CORNER" : "ASSISTANT SCANNING CORNER") : "CORNER SCANNED";
             GUI.Label(new Rect(x + 16, 533, 348, 20), label, FieldUi.Eyebrow);
             GUI.Label(new Rect(x + 16, 553, 348, 22), point.Label, FieldUi.Small);
-            FieldUi.Rounded(new Rect(x + 16, 580, 348, 4), new Color(.16f, .22f, .29f), 2);
+            FieldUi.Rounded(new Rect(x + 16, 580, 348, 4), new Color(.26f, .18f, .20f), 2);
             FieldUi.Rounded(new Rect(x + 16, 580, 348 * (active ? point.Progress : 1), 4), active ? FieldUi.Accent : FieldUi.Success, 2);
         }
         void DrawControls(float width)

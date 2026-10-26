@@ -20,8 +20,8 @@ namespace Clearance
         GUIStyle heading, eyebrow, subtitle, description, footer, menuButtonText, menuButtonIcon;
         GUIContent[] eyebrowLetters, subtitleLetters, footerLetters;
         float[] eyebrowWidths, subtitleWidths, footerWidths;
-        static readonly Color MenuWhite = new Color32(237, 245, 252, 255);
-        static readonly Color MenuTeal = new Color32(105, 217, 209, 255);
+        static readonly Color MenuWhite = new Color32(255, 245, 245, 255);
+        static readonly Color MenuAccent = new Color32(240, 107, 104, 255);
         public bool IntroPlaying => intro;
         public bool ProbesWereActive { get; private set; }
         public static EditorPatrolMenu Active { get; private set; }
@@ -63,7 +63,7 @@ namespace Clearance
                 float x = i / 255f;
                 float alpha = x <= .29f ? Mathf.Lerp(.94f, .74f, x / .29f) :
                     x <= .65f ? Mathf.Lerp(.74f, .15f, (x - .29f) / .36f) : Mathf.Lerp(.15f, 0, (x - .65f) / .35f);
-                pixels[i] = new Color(2 / 255f, 9 / 255f, 18 / 255f, alpha);
+                pixels[i] = new Color(12 / 255f, 5 / 255f, 7 / 255f, alpha);
             }
             menuShade.SetPixels(pixels); menuShade.Apply(false, true);
             var camera = gameObject.AddComponent<Camera>(); camera.cullingMask = 0;
@@ -109,7 +109,7 @@ namespace Clearance
                 GUI.DrawTexture(new Rect(0, 0, width, 720), menuShade);
                 GUI.color = Color.white;
                 DrawLetters(new Vector2(54, 120), eyebrowLetters, eyebrowWidths, eyebrow, 2);
-                GUI.Label(new Rect(50, 162, 450, 84), "<b>BLIND<color=#69D9D1>SPOT</color></b>", heading);
+                GUI.Label(new Rect(50, 162, 450, 84), "<b>BLIND<color=#F06B68>SPOT</color></b>", heading);
                 DrawLetters(new Vector2(54, 250), subtitleLetters, subtitleWidths, subtitle, 5);
                 GUI.Label(new Rect(54, 302, 400, 72), "Enter carefully. Verify the threat.\nBring everyone out safely.", description);
                 if (MenuButton(new Rect(54, 400, 340, 54), "Start Game", "→", true)) StartIntro();
@@ -140,10 +140,10 @@ namespace Clearance
             }
             heading = Style(60, FontStyle.Bold, MenuWhite);
             heading.richText = true;
-            eyebrow = Style(11, FontStyle.Bold, MenuTeal);
-            subtitle = Style(13, FontStyle.Normal, new Color32(177, 198, 216, 255));
-            description = Style(16, FontStyle.Normal, new Color32(192, 203, 216, 255)); description.wordWrap = true;
-            footer = Style(10, FontStyle.Normal, new Color32(148, 170, 189, 255));
+            eyebrow = Style(11, FontStyle.Bold, MenuAccent);
+            subtitle = Style(13, FontStyle.Normal, new Color32(212, 190, 192, 255));
+            description = Style(16, FontStyle.Normal, new Color32(218, 206, 208, 255)); description.wordWrap = true;
+            footer = Style(10, FontStyle.Normal, new Color32(183, 160, 166, 255));
             menuButtonText = Style(16, FontStyle.Bold, MenuWhite); menuButtonText.alignment = TextAnchor.MiddleLeft;
             menuButtonIcon = new GUIStyle(menuButtonText) { alignment = TextAnchor.MiddleRight };
             CacheLetters("TACTICAL DECISIONS. REAL CONSEQUENCES.", eyebrow, out eyebrowLetters, out eyebrowWidths);
@@ -166,11 +166,11 @@ namespace Clearance
         bool MenuButton(Rect rect, string text, string icon, bool primary = false)
         {
             bool hover = rect.Contains(Event.current.mousePosition);
-            Color fill = primary ? (hover ? new Color32(148, 238, 231, 255) : new Color32(99, 216, 206, 255)) :
-                hover ? new Color32(35, 63, 82, 255) : new Color32(12, 25, 40, 219);
-            FieldUi.Rounded(rect, primary ? fill : new Color32(82, 101, 119, 255), 13);
+            Color fill = primary ? (hover ? new Color32(201, 65, 77, 255) : new Color32(184, 50, 61, 255)) :
+                hover ? new Color32(60, 36, 42, 255) : new Color32(28, 20, 22, 230);
+            FieldUi.Rounded(rect, primary ? fill : new Color32(105, 85, 90, 255), 13);
             if (!primary) FieldUi.Rounded(new Rect(rect.x + 1, rect.y + 1, rect.width - 2, rect.height - 2), fill, 12);
-            menuButtonText.normal.textColor = menuButtonIcon.normal.textColor = primary ? new Color32(5, 28, 36, 255) : MenuWhite;
+            menuButtonText.normal.textColor = menuButtonIcon.normal.textColor = MenuWhite;
             bool clicked = GUI.Button(new Rect(rect.x + 22, rect.y, rect.width - 44, rect.height), text, menuButtonText);
             GUI.Label(new Rect(rect.x + 22, rect.y, rect.width - 44, rect.height), icon, menuButtonIcon);
             // The full rounded surface, including the icon, is clickable.
