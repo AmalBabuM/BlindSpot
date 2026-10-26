@@ -1049,13 +1049,11 @@ PrefabInstance:
       propertyPath: m_ReflectionProbeUsage
       value: 2
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 8249556, guid: 088b5f04d52a542ec975e88d7d9934f5, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 192030, guid: 088b5f04d52a542ec975e88d7d9934f5, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 246536806}
     - targetCorrespondingSourceObject: {fileID: 169994, guid: 088b5f04d52a542ec975e88d7d9934f5, type: 3}
       insertIndex: -1
       addedObject: {fileID: 246536805}
@@ -1070,11 +1068,6 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 169994, guid: 088b5f04d52a542ec975e88d7d9934f5, type: 3}
   m_PrefabInstance: {fileID: 246536801}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &246536804 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 192030, guid: 088b5f04d52a542ec975e88d7d9934f5, type: 3}
-  m_PrefabInstance: {fileID: 246536801}
-  m_PrefabAsset: {fileID: 0}
 --- !u!114 &246536805
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1082,19 +1075,6 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 246536803}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c291d58a81334f145a924bff1d1e9c7e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Clearance.InteractableDoor
-  openAngle: 95
---- !u!114 &246536806
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 246536804}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c291d58a81334f145a924bff1d1e9c7e, type: 3}
@@ -6781,13 +6761,11 @@ PrefabInstance:
       propertyPath: m_ReflectionProbeUsage
       value: 2
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 8249556, guid: 088b5f04d52a542ec975e88d7d9934f5, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 192030, guid: 088b5f04d52a542ec975e88d7d9934f5, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1806231387}
     - targetCorrespondingSourceObject: {fileID: 169994, guid: 088b5f04d52a542ec975e88d7d9934f5, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1806231386}
@@ -6802,11 +6780,6 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 169994, guid: 088b5f04d52a542ec975e88d7d9934f5, type: 3}
   m_PrefabInstance: {fileID: 1806231382}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &1806231385 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 192030, guid: 088b5f04d52a542ec975e88d7d9934f5, type: 3}
-  m_PrefabInstance: {fileID: 1806231382}
-  m_PrefabAsset: {fileID: 0}
 --- !u!114 &1806231386
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6814,19 +6787,6 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1806231384}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c291d58a81334f145a924bff1d1e9c7e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Clearance.InteractableDoor
-  openAngle: 95
---- !u!114 &1806231387
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1806231385}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c291d58a81334f145a924bff1d1e9c7e, type: 3}
