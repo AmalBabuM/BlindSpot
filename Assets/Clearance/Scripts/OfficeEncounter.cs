@@ -17,6 +17,9 @@ namespace Clearance
         Bounds deskBounds;
         Vector3 entryPosition;
         PrisonerPresentation suspectPresentation;
+        GroundFloorMission mission;
+        string stairsDistance;
+        float nextMarkerUpdate;
         public bool SuspectRevealed { get; private set; }
         public float RevealedAt { get; private set; }
         public FirstPersonOfficer Player => player;
@@ -50,6 +53,7 @@ namespace Clearance
         { player = officer; suspect = target; score = decisions; people = occupants; escort = assistance; custodyPoint = custody; nextFloor = stairs; }
         void Awake()
         {
+            mission = GetComponent<GroundFloorMission>();
             entryPosition = player.transform.position;
             suspectPresentation = suspect.GetComponentInChildren<PrisonerPresentation>();
             if (!receptionDesk) receptionDesk = GameObject.Find("Front Desk")?.transform;
@@ -95,16 +99,18 @@ namespace Clearance
         }
         void OnGUI()
         {
-            var stairs = GetComponent<GroundFloorMission>().Stairs;
+            var stairs = mission.Stairs;
             if (stairs && stairs.Finished) return;
             if (!ReadyForNextFloor || player.InteractionBlocked || Event.current.type != EventType.Repaint) return;
             var point = player.View.WorldToViewportPoint(nextFloor.position + Vector3.up * 1.5f);
             if (point.z <= 0) return;
             GUI.matrix = Matrix4x4.identity;
             GUI.color = Color.yellow;
+            if (Time.unscaledTime >= nextMarkerUpdate)
+            { nextMarkerUpdate = Time.unscaledTime + .2f; stairsDistance = "STAIRS / NEXT FLOOR\n" + Vector3.Distance(player.transform.position, nextFloor.position).ToString("F0") + " m"; }
             GUI.Label(new Rect(Mathf.Clamp(point.x * Screen.width - 100, 10, Screen.width - 220),
                 Mathf.Clamp((1 - point.y) * Screen.height, 150, Screen.height - 150), 240, 45),
-                "STAIRS / NEXT FLOOR\n" + Vector3.Distance(player.transform.position, nextFloor.position).ToString("F0") + " m");
+                stairsDistance);
             GUI.color = Color.white;
         }
     }

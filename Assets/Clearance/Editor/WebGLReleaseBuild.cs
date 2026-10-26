@@ -12,7 +12,11 @@ namespace Clearance.Editor
     public static class WebGLReleaseBuild
     {
         const string Request = "Library/ClearanceWebGLBuild.request";
-        static WebGLReleaseBuild() => EditorApplication.delayCall += Process;
+        static WebGLReleaseBuild()
+        {
+            EditorApplication.delayCall += Process;
+            EditorApplication.playModeStateChanged += state => { if (state == PlayModeStateChange.EnteredEditMode) EditorApplication.delayCall += Process; };
+        }
         [MenuItem("Clearance/Build WebGL Release")]
         public static void Start()
         {

@@ -38,6 +38,7 @@ namespace Clearance
         {
             if (careful)
             {
+                if (Mathf.Approximately(angle, carefulTarget)) return;
                 angle = Mathf.MoveTowards(angle, carefulTarget, 25 * Time.fixedDeltaTime);
                 Quaternion rotation = closed * Quaternion.Euler(0, angle, 0);
                 body.MoveRotation(transform.parent ? transform.parent.rotation * rotation : rotation);

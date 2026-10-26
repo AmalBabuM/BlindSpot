@@ -17,6 +17,8 @@ namespace Clearance
         float nextCardAt;
         bool introPending, receptionPending;
         bool ended;
+        PatrolPause pause;
+        GroundFloorMission mission;
         public void EndGuidance() { Close(); introPending = receptionPending = false; ended = true; enabled = false; }
         public double ArrivalVisibleAt { get; private set; } = -1;
         public double FirstCardShownAt { get; private set; } = -1;
@@ -30,9 +32,10 @@ namespace Clearance
         public string SecondaryChoice { get; private set; }
         public string Hint { get; private set; } = "Approach reception carefully.";
         public bool FlashlightInstructionActive => !FlashlightLearned && Step == OfficeBriefing.Visibility;
-        public string CurrentTask => office.Failed ? office.Objective : office.ReadyForNextFloor && office.GetComponent<GroundFloorMission>().Stairs ?
-            office.GetComponent<GroundFloorMission>().Stairs.Objective : !FlashlightLearned ? "Press F to turn on your flashlight before advancing." : office.Objective;
-        public void Configure(OfficeEncounter encounter, OfficerActions controls) { office = encounter; actions = controls; }
+        public string CurrentTask => office.Failed ? office.Objective : office.ReadyForNextFloor && mission.Stairs ?
+            mission.Stairs.Objective : !FlashlightLearned ? "Press F to turn on your flashlight before advancing." : office.Objective;
+        public void Configure(OfficeEncounter encounter, OfficerActions controls)
+        { office = encounter; actions = controls; mission = office.GetComponent<GroundFloorMission>(); pause = office.Player.GetComponent<PatrolPause>(); }
         void Start()
         {
             if (!office) { enabled = false; return; }
@@ -47,7 +50,7 @@ namespace Clearance
         }
         void Update()
         {
-            if (ended || office.Player.GetComponent<PatrolPause>() is PatrolPause pause && pause.IsOpen) return;
+            if (ended || pause && pause.IsOpen) return;
             if (office.Failed)
             {
                 introPending = false; receptionPending = false;

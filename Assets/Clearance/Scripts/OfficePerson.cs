@@ -19,7 +19,13 @@ namespace Clearance
         public bool Harmed { get; private set; }
         public bool IsCivilian => civilian;
         public Animator Animator => animator;
-        public string Status => Harmed ? "Person injured" : !encounter.SuspectRevealed ? "Person sheltering behind reception" :
+        string cachedStatus;
+        float nextStatus;
+        public string Status
+        {
+            get { if (cachedStatus == null || Time.unscaledTime >= nextStatus) { nextStatus = Time.unscaledTime + .15f; cachedStatus = BuildStatus(); } return cachedStatus; }
+        }
+        string BuildStatus() => Harmed ? "Person injured" : !encounter.SuspectRevealed ? "Person sheltering behind reception" :
             !HandsRaised ? "Unidentified person | Q: Both of you, hands up!" :
             !Identified ? $"Unidentified | Inspect with flashlight nearby ({Mathf.Clamp01(inspection / 1.25f):P0})" :
             civilian ? "IDENTIFIED: Office admin / Civilian - protect him" : !encounter.AllIdentified ?

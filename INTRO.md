@@ -12,4 +12,4 @@ Source video: Assets/StreamingAssets/Intro/Intro_Video.mp4 (copied unchanged fro
 
 Template: Assets/WebGLTemplates/ClearanceIntro/index.html and intro.js. The selected Player setting is PROJECT:ClearanceIntro; Clearance > Build WebGL Release also explicitly selects it. Standard Unity Web builds copy the template and StreamingAssets into the output automatically. Upload the entire build folder, including StreamingAssets. Serve over HTTP/HTTPS rather than opening index.html directly.
 
-The current Builds/WebGL launch page and media were updated directly without recompiling unchanged game code. This intro is specific to the WebGL launch page; Unity Editor Play mode starts the encounter directly. Restarting the encounter in-game does not replay the video; reloading the web page does.
+The WebGL launch page owns the shipped menu and intro. Unity Editor Play mode now has an EditorPatrolMenu preview of the same flow, including controls, sound, intro, Skip and Back to Menu. Its code is excluded from player builds. Restarting the encounter in-game does not replay the video; returning to the menu starts the launch flow again.

@@ -31,6 +31,7 @@ namespace Clearance
         { mission = m; score = s; officer = p; actions = a; }
         void Awake()
         {
+            if (!officer.GetComponent<FrameBudgetSample>()) officer.gameObject.AddComponent<FrameBudgetSample>();
             pause = officer.GetComponent<PatrolPause>();
             if (!pause) pause = officer.gameObject.AddComponent<PatrolPause>();
             if (mission && mission.Office)
@@ -202,7 +203,7 @@ namespace Clearance
             float column = (drawerWidth - 44) / 3;
             GUI.Label(new Rect(42, 550, column, 80), "WASD  Move\nMouse  Look around\nShift  Move carefully", FieldUi.Body);
             GUI.Label(new Rect(42 + column, 550, column, 80), "F  Flashlight\nQ  Voice command\nE  Interact / push door", FieldUi.Body);
-            GUI.Label(new Rect(42 + column * 2, 550, column, 80), "1 / 2  Stun / firearm\nLMB  Use selected tool\nI  Controls   /   Esc  Cursor", FieldUi.Body);
+            GUI.Label(new Rect(42 + column * 2, 550, column, 80), "1 / 2  Stun / firearm\nLMB  Use selected tool\nI  Controls   /   Esc  Pause", FieldUi.Body);
         }
     }
 }

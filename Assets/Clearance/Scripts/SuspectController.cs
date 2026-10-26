@@ -23,7 +23,19 @@ namespace Clearance
         public float WeaponCheckProgress => Mathf.Clamp01(weaponCheck / inspectionSeconds);
         public SuspectState State { get; private set; }
         public bool Resolved => State == SuspectState.Restrained || State == SuspectState.Stunned || State == SuspectState.Down;
-        public string Status => State switch
+        string cachedStatus;
+        float nextStatus;
+        SuspectState cachedState;
+        public string Status
+        {
+            get
+            {
+                if (cachedStatus == null || cachedState != State || Time.unscaledTime >= nextStatus)
+                { cachedState = State; nextStatus = Time.unscaledTime + .15f; cachedStatus = BuildStatus(); }
+                return cachedStatus;
+            }
+        }
+        string BuildStatus() => State switch
         {
             SuspectState.Armed => "Armed person | Q: Drop the weapon!",
             SuspectState.Patrolling => "Patrolling | Approach carefully",

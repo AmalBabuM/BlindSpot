@@ -17,6 +17,7 @@ namespace Clearance.Editor
         static StairEncounterTest()
         {
             EditorApplication.delayCall += Process;
+            EditorApplication.playModeStateChanged += state => { if (state == PlayModeStateChange.EnteredEditMode) EditorApplication.delayCall += Process; };
             EditorApplication.playModeStateChanged += Changed;
         }
         static void Process()

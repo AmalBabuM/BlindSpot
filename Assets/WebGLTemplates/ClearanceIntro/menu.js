@@ -25,7 +25,7 @@ window.playClearanceIntro = function (startGame) {
         <div><dt>Shift</dt><dd>Move carefully</dd></div><div><dt>F</dt><dd>Toggle flashlight</dd></div>
         <div><dt>Q</dt><dd>Voice command</dd></div><div><dt>E</dt><dd>Interact</dd></div>
         <div><dt>1 / 2</dt><dd>Stun device / firearm</dd></div><div><dt>Left click</dt><dd>Use selected tool</dd></div>
-        <div><dt>I</dt><dd>Instructions and controls</dd></div><div><dt>Esc</dt><dd>Release cursor</dd></div>
+        <div><dt>I</dt><dd>Instructions and controls</dd></div><div><dt>Esc</dt><dd>Pause / Back to Menu</dd></div>
       </dl><p class="help-note">Use E to open stair doors carefully. Pushing in risks an ambush. Verify identities before using force.</p>
       <button id="menu-help-close" class="menu-primary" type="button">Close</button>
     </dialog>`;

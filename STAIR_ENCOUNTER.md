@@ -1,6 +1,6 @@
 # Stair encounter and pause
 
-Press Escape to pause, then Resume patrol or Back to Menu. In WebGL, Back to Menu reloads the launch page and resets the current run, retaining the saved sound preference. Editor Play mode restarts GroundFloor because the launch menu belongs to the WebGL template.
+Press Escape to pause, then Resume patrol or Back to Menu. In WebGL, Back to Menu reloads the launch page and resets the current run, retaining the saved sound preference. Editor Play mode reloads GroundFloor into its Editor menu preview. Retry mission starts the encounter directly.
 
 Reception retains its existing sequence. After both people are evacuated and the assistant returns, the stair instruction explains the new entry choice. E opens a stair door at 25 degrees/second, still limited to the existing 85-degree stop. Colliding with the door without first using E triggers the ambush. Only player contact triggers this penalty; the assistant cannot accidentally start the ambush. Before reception is secured, E displays the reception objective instead of granting careful entry.
 

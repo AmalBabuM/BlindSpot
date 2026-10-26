@@ -15,7 +15,11 @@ namespace Clearance.Editor
     public static class OfficeInstaller
     {
         const string Request = "Library/ClearanceOffice.request";
-        static OfficeInstaller() => EditorApplication.delayCall += Process;
+        static OfficeInstaller()
+        {
+            EditorApplication.delayCall += Process;
+            EditorApplication.playModeStateChanged += state => { if (state == PlayModeStateChange.EnteredEditMode) EditorApplication.delayCall += Process; };
+        }
         static void Process()
         {
             if (!File.Exists(Request) || EditorApplication.isPlayingOrWillChangePlaymode || SceneManager.GetActiveScene().name != "GroundFloor") return;

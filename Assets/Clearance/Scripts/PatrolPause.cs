@@ -27,6 +27,9 @@ namespace Clearance
 #if UNITY_WEBGL && !UNITY_EDITOR
             ClearanceBackToMenu();
 #else
+#if UNITY_EDITOR
+            UnityEditor.SessionState.SetBool("Clearance.ShowEditorMenu", true);
+#endif
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
 #endif
         }

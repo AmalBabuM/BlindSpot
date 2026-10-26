@@ -32,6 +32,7 @@ namespace Clearance
         float cuffTime;
         bool applyingCuffs;
         SuspectController cuffTarget;
+        Animator cuffAnimator;
         readonly Collider[] nearbyDoors = new Collider[32];
         float nextDoorScan;
         public string Status { get; private set; } = "Ready";
@@ -150,7 +151,7 @@ namespace Clearance
         }
         void SupportSurrender(SuspectController suspect)
         {
-            if (cuffTarget != suspect) { cuffTime = 0; applyingCuffs = false; }
+            if (cuffTarget != suspect) { cuffTime = 0; applyingCuffs = false; cuffAnimator = suspect.GetComponentInChildren<Animator>(); }
             cuffTarget = suspect;
             bool kneeling = suspect.State == SuspectState.Considering || suspect.State == SuspectState.Surrendered || suspect.State == SuspectState.Restrained;
             Vector3 desired = kneeling ? suspect.transform.position - suspect.transform.forward * .75f :
@@ -207,7 +208,7 @@ namespace Clearance
             if (flashlight) flashlight.transform.rotation = observationView.transform.rotation;
             if (applyingCuffs)
             {
-                var suspectAnimator = cuffTarget ? cuffTarget.GetComponentInChildren<Animator>() : null;
+                var suspectAnimator = cuffAnimator;
                 if (suspectAnimator && suspectAnimator.isHuman)
                 {
                     ReachWrist(HumanBodyBones.LeftUpperArm, HumanBodyBones.LeftLowerArm, suspectAnimator.GetBoneTransform(HumanBodyBones.LeftHand));
