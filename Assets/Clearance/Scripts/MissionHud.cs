@@ -51,7 +51,7 @@ namespace Clearance
         void OnDisable()
         {
             if (score) score.Awarded -= Awarded;
-            if (ControlsOpen) ToggleControls();
+            ControlsOpen = false; controlsOwnBlock = false;
         }
         void Awarded(int points, string reason)
         {

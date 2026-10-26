@@ -1,4 +1,3 @@
-using System.Runtime.InteropServices;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -10,9 +9,6 @@ namespace Clearance
         bool wasBlocked;
         float previousTime;
         public bool IsOpen { get; private set; }
-#if UNITY_WEBGL && !UNITY_EDITOR
-        [DllImport("__Internal")] static extern void ClearanceBackToMenu();
-#endif
         void Awake() => player = GetComponent<FirstPersonOfficer>();
         public void Toggle()
         {
@@ -24,14 +20,8 @@ namespace Clearance
         public static void BackToMenu()
         {
             Time.timeScale = 1;
-#if UNITY_WEBGL && !UNITY_EDITOR
-            ClearanceBackToMenu();
-#else
-#if UNITY_EDITOR
-            UnityEditor.SessionState.SetBool("Clearance.ShowEditorMenu", true);
-#endif
+            PatrolMainMenu.RequestReturn();
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-#endif
         }
         void OnGUI()
         {

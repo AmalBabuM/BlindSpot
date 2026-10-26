@@ -1,14 +1,14 @@
 #if UNITY_EDITOR
-using System.IO;
 using UnityEditor;
+#endif
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.Video;
 
 namespace Clearance
 {
-    // Editor preview of the WebGL launch flow. Excluded entirely from player builds.
-    public sealed class EditorPatrolMenu : MonoBehaviour
+    // Runs inside the player so embedded hosts do not need our custom HTML menu.
+    public sealed class PatrolMainMenu : MonoBehaviour
     {
         GameObject[] sceneRoots;
         Texture2D background;
@@ -16,6 +16,7 @@ namespace Clearance
         [SerializeField, Range(0, 1)] float overlayOpacity = 1;
         VideoPlayer video;
         bool controls, intro, muted, completed;
+        string introError;
         Font menuFont;
         GUIStyle heading, eyebrow, subtitle, description, footer, menuButtonText, menuButtonIcon;
         GUIContent[] eyebrowLetters, subtitleLetters, footerLetters;
@@ -23,25 +24,30 @@ namespace Clearance
         static readonly Color MenuWhite = new Color32(255, 245, 245, 255);
         static readonly Color MenuAccent = new Color32(240, 107, 104, 255);
         public bool IntroPlaying => intro;
+        public bool IntroHasFrame => video && video.texture;
         public bool ProbesWereActive { get; private set; }
-        public static EditorPatrolMenu Active { get; private set; }
+        public static PatrolMainMenu Active { get; private set; }
         static bool firstScene;
+        static bool returnRequested;
+        public static void RequestReturn() => returnRequested = true;
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         static void Install()
-        { firstScene = true; SceneManager.sceneLoaded -= ShowOnPlay; SceneManager.sceneLoaded += ShowOnPlay; }
+        { firstScene = true; returnRequested = false; SceneManager.sceneLoaded -= ShowOnPlay; SceneManager.sceneLoaded += ShowOnPlay; }
         static void ShowOnPlay(Scene scene, LoadSceneMode mode)
         {
             if (SceneManager.GetActiveScene().name != "GroundFloor") return;
-            bool requested = SessionState.GetBool("Clearance.ShowEditorMenu", false);
-            SessionState.EraseBool("Clearance.ShowEditorMenu");
+            bool requested = returnRequested;
+            returnRequested = false;
             if (!firstScene && !requested) return;
             firstScene = false;
+#if UNITY_EDITOR
             if (SessionState.GetBool("Clearance.SkipEditorMenu", false))
             { SessionState.EraseBool("Clearance.SkipEditorMenu"); return; }
             string[] tests = { "OfficeTest", "StairsTest", "FeedbackTest", "SquadTest", "ElevatorTest", "LightingVerify", "SmokeTest" };
             foreach (string test in tests) if (SessionState.GetBool("Clearance." + test, false)) return;
+#endif
             var roots = System.Array.FindAll(SceneManager.GetActiveScene().GetRootGameObjects(), root => root.activeSelf);
-            var menu = new GameObject("Editor Main Menu").AddComponent<EditorPatrolMenu>();
+            var menu = new GameObject("Main Menu").AddComponent<PatrolMainMenu>();
             menu.sceneRoots = roots;
             foreach (var root in roots) if (root.activeSelf) root.SetActive(false);
             Cursor.lockState = CursorLockMode.None; Cursor.visible = true;
@@ -51,9 +57,8 @@ namespace Clearance
         {
             Active = this;
             ProbesWereActive = FindAnyObjectByType<LightProbeGroup>() != null;
-            muted = EditorPrefs.GetBool("Clearance.EditorMuted", false);
-            background = new Texture2D(2, 2, TextureFormat.RGB24, false);
-            background.LoadImage(File.ReadAllBytes("Assets/WebGLTemplates/ClearanceIntro/menu-background.png"), true);
+            muted = PlayerPrefs.GetInt("Clearance.SoundMuted", 0) != 0;
+            background = Resources.Load<Texture2D>("Launch/MenuBackground");
             // Match menu.css: a full-width fade, rather than a box with a hard edge.
             menuShade = new Texture2D(256, 1, TextureFormat.RGBA32, false);
             menuShade.wrapMode = TextureWrapMode.Clamp; menuShade.filterMode = FilterMode.Bilinear;
@@ -70,10 +75,11 @@ namespace Clearance
             camera.clearFlags = CameraClearFlags.SolidColor; camera.backgroundColor = Color.black;
             gameObject.AddComponent<AudioListener>();
             video = gameObject.AddComponent<VideoPlayer>(); video.playOnAwake = false; video.isLooping = false;
-            video.source = VideoSource.Url; video.url = Path.Combine(Application.streamingAssetsPath, "Intro/Intro_Video.mp4");
+            video.source = VideoSource.Url; video.url = Application.streamingAssetsPath.TrimEnd('/') + "/Intro/Intro_Video.mp4";
+            video.timeUpdateMode = VideoTimeUpdateMode.UnscaledGameTime;
             video.renderMode = VideoRenderMode.APIOnly; video.audioOutputMode = VideoAudioOutputMode.Direct;
             video.loopPointReached += _ => EnterMission();
-            video.errorReceived += (_, error) => { Debug.LogWarning("Intro preview: " + error); EnterMission(); };
+            video.errorReceived += (_, error) => { introError = "Intro unavailable. Choose Skip intro to continue."; Debug.LogWarning("Intro: " + error); };
         }
         public void StartIntro()
         {
@@ -100,6 +106,8 @@ namespace Clearance
             {
                 GUI.DrawTexture(new Rect(0, 0, width, 720), Texture2D.blackTexture);
                 if (video.texture) GUI.DrawTexture(new Rect(0, 0, width, 720), video.texture, ScaleMode.ScaleToFit);
+                if (!string.IsNullOrEmpty(introError) || !video.isPrepared)
+                    GUI.Label(new Rect(28, 658, width - 250, 40), introError ?? "Loading intro…", description);
                 if (FieldUi.Button(new Rect(width - 190, 650, 160, 46), "Skip intro →")) EnterMission();
             }
             else
@@ -115,7 +123,7 @@ namespace Clearance
                 if (MenuButton(new Rect(54, 400, 340, 54), "Start Game", "→", true)) StartIntro();
                 if (MenuButton(new Rect(54, 468, 340, 54), "Controls", "i")) controls = !controls;
                 if (MenuButton(new Rect(54, 536, 340, 54), muted ? "Sound: Off" : "Sound: On", ""))
-                { muted = !muted; EditorPrefs.SetBool("Clearance.EditorMuted", muted); }
+                { muted = !muted; PlayerPrefs.SetInt("Clearance.SoundMuted", muted ? 1 : 0); PlayerPrefs.Save(); }
                 DrawLetters(new Vector2(54, 626), footerLetters, footerWidths, footer, 2);
                 if (controls)
                 {
@@ -132,7 +140,7 @@ namespace Clearance
         void PrepareMenuStyles()
         {
             if (heading != null) return;
-            menuFont = Font.CreateDynamicFontFromOSFont("Arial", 16);
+            menuFont = Resources.Load<Font>("Launch/MenuFont");
             GUIStyle Style(int size, FontStyle weight, Color tint)
             {
                 var style = new GUIStyle(GUI.skin.label) { font = menuFont, fontSize = size, fontStyle = weight, padding = new RectOffset(0, 0, 0, 0) };
@@ -178,7 +186,6 @@ namespace Clearance
             return clicked;
         }
         void OnDestroy()
-        { if (background) Destroy(background); if (menuShade) Destroy(menuShade); if (menuFont) Destroy(menuFont); if (Active == this) Active = null; }
+        { if (background) Resources.UnloadAsset(background); if (menuShade) Destroy(menuShade); if (menuFont) Resources.UnloadAsset(menuFont); if (Active == this) Active = null; }
     }
 }
-#endif

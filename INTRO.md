@@ -1,15 +1,13 @@
-# WebGL intro
+# Menu and intro hosting
 
-The release uses the ClearanceIntro WebGL template, based on Unity 6.6's Default template. It first shows the supplied office artwork with Start Game, Controls, and Sound On/Off buttons. Controls opens a keyboard/mouse reference with Close and Escape support. Sound selection is saved locally where browser storage is available. The artwork is user-provided and copied unchanged into menu-background.png.
+PatrolMainMenu runs inside the Unity player on WebGL and in Editor. Start Game, Controls, Sound, intro playback and Skip no longer depend on custom hosting-page HTML. The red menu artwork and Liberation Sans font are bundled under Assets/Resources/Launch. The font license is included under StreamingAssets/ThirdParty.
 
-Start Game plays the user-provided 20-second, 1920×1080 MP4 before creating the Unity instance. A rounded Skip intro button remains available throughout. Completion or skipping fades out the video, releases its media resources, and starts normal Unity loading and gameplay. The existing four-second tutorial delay begins after gameplay becomes visible. Video playback starts inside the Start Game click handler to support audio in browsers requiring a user gesture.
+The 20-second user-provided MP4 remains at Assets/StreamingAssets/Intro/Intro_Video.mp4 and is played by VideoPlayer using Application.streamingAssetsPath. Skip remains visible while loading or playing. A media error leaves Skip available. Browser/host permission restrictions can still prevent video/audio playback; they cannot trap the player on the intro.
 
-Sound Off mutes both the intro and gameplay. WebGLAudioPreference reads the menu preference through ClearanceAudio.jslib before the first scene and applies AudioListener.volume. Menu code runs outside Unity, so there is no game simulation or tutorial countdown while the menu is open.
+Back to Menu sets an in-player return request and reloads GroundFloor. It does not reload the hosting iframe or page. Retry mission restarts gameplay directly. Sound uses PlayerPrefs and AudioListener.volume, plus the video's direct mute setting.
 
-Browsers may block automatic playback with audio. In that case, Play intro provides the required user gesture; Skip intro is also available. A media error leaves an explanation and the Skip button, so it cannot trap the player. Video preserves its aspect ratio at any viewport size.
+ClearanceIntro now only boots Unity. Unity Play can use its own loader without losing our menu or intro controls. The obsolete HTML menu/intro scripts remain as reference files but are not loaded by index.html. Unity Play's own poster/Play button belongs to the website and appears before our player launches.
 
-Source video: Assets/StreamingAssets/Intro/Intro_Video.mp4 (copied unchanged from the supplied Downloads file, approximately 7.2 MB). Replace that file to change the intro. No re-encoding or third-party video package was used.
+Build with Clearance > Build WebGL Release, then update the existing Unity Play game's build using the entire build output or the prepared ZIP. Keep StreamingAssets, including the video, in the upload. Do not upload only TemplateData.
 
-Template: Assets/WebGLTemplates/ClearanceIntro/index.html and intro.js. The selected Player setting is PROJECT:ClearanceIntro; Clearance > Build WebGL Release also explicitly selects it. Standard Unity Web builds copy the template and StreamingAssets into the output automatically. Upload the entire build folder, including StreamingAssets. Serve over HTTP/HTTPS rather than opening index.html directly.
-
-The WebGL launch page owns the shipped menu and intro. Unity Editor Play mode now has an EditorPatrolMenu preview of the same flow, including controls, sound, intro, Skip and Back to Menu. Its code is excluded from player builds. Restarting the encounter in-game does not replay the video; returning to the menu starts the launch flow again.
+Clearance > Test Editor Main Menu checks actual decoded video, Skip, gameplay activation, original lighting activation states and return to menu. The rendered build is separately checked in the browser because browser video permissions differ from Editor playback.

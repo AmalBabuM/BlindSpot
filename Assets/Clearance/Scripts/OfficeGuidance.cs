@@ -171,6 +171,11 @@ namespace Clearance
             nextCardAt = Time.unscaledTime + .9f;
             office.Player.SetInteractionBlocked(false);
         }
-        void OnDisable() { if (office) Close(); }
+        void OnDisable()
+        {
+            // Scene/menu teardown must not request pointer lock on the departing canvas.
+            if (!CardOpen) return;
+            CardOpen = false; Time.timeScale = resumeTimeScale;
+        }
     }
 }

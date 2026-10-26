@@ -1,0 +1,9 @@
+UNITY PLAY UPDATE
+
+Upload Builds/BlindSpot-UnityPlay-Upload.zip to replace the build of your existing Unity Play game. Use the ZIP contents as the complete build, not only the TemplateData folder. The ZIP has index.html at its root, current Build files, StreamingAssets including the intro, and only the required TemplateData assets. An older nested build was excluded.
+
+Unity Play's outer blue Play button is website UI, before the game starts. It cannot be replaced by an in-game Skip button. After launch: red main menu > Start Game > intro with Skip intro > gameplay.
+
+Back to Menu now reloads the game scene into the native menu. It no longer reloads Unity Play's iframe. The menu, artwork and font are bundled inside the player; no custom HTML menu is required.
+
+Local verification: native menu, decoded intro video with Skip visible, skip into gameplay, natural intro completion, pause and return to menu. Editor menu flow check passed. Final WebGL build: zero errors. The existing live Unity Play build has not been replaced by this local work.

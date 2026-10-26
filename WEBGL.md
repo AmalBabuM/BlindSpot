@@ -25,7 +25,7 @@ Keep the default compressed build/server configuration consistent when hosting. 
 
 ## Menu and navigation
 
-Open GroundFloor and press Play to see the Editor menu preview. It uses the same supplied artwork, has Start/Controls/Sound, plays the intro and supports Skip. Gameplay roots remain inactive until the intro finishes or is skipped. Back to Menu also works in Editor. EditorPatrolMenu is excluded from WebGL; the browser uses the lightweight HTML menu. Automated gameplay tests bypass the Editor menu.
+Open GroundFloor and press Play to see the Editor menu preview. It uses the same supplied artwork, has Start/Controls/Sound, plays the intro and supports Skip. Gameplay roots remain inactive until the intro finishes or is skipped. Back to Menu also works in Editor. PatrolMainMenu is included in WebGL and runs in the player, so embedded hosts can replace the surrounding HTML without losing the menu. Automated gameplay tests bypass the Editor menu.
 
 Clearance > Rebake Navigation And Check Performance backs up OfficeNavigation.asset under NavigationBackups, rebuilds navigation from the current scene, and verifies complete entrance-to-evacuation and entrance-to-stairs routes. It saves navigation without rebaking lighting or re-enabling disabled probes. Results: Logs/Navigation-optimization.txt. The Unity splash-screen setting is preserved as supplied.
 

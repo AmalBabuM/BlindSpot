@@ -37,9 +37,6 @@
         <div id="unity-build-title">{{{ PRODUCT_NAME }}}</div>
       </div>
     </div>
-    <link rel="stylesheet" href="menu.css">
-    <script src="menu.js"></script>
-    <script src="intro.js"></script>
     <script>
       let canvas = document.querySelector("#unity-canvas");
       let fullscreenContainer = document.querySelector("#unity-fullscreen-container");
@@ -220,7 +217,7 @@
               });
             };
 
-      playClearanceIntro(() => document.body.appendChild(script));
+      document.body.appendChild(script);
 
     </script>
   </body>
